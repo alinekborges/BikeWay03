@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BikeWay03
+namespace BikeWay03.ViewModels
 {
     public class StationModel : INotifyPropertyChanged
     {
@@ -20,6 +20,9 @@ namespace BikeWay03
         public int bikes { get; set; }
         public int free { get; set; }
         public string station_url { get; set; }
+        public double percentage { get; set; }
+        public string _bikes_string { get; set; }
+        public string _free_string { get; set; }
 
         public int ID
         {
@@ -81,6 +84,48 @@ namespace BikeWay03
                 if (this._geoCoordinate != value)
                 {
                     this._geoCoordinate = value;
+                    this.NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string BikesString
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this._bikes_string))
+                {
+                    this._bikes_string = this.bikes.ToString();
+                }
+                return this._bikes_string;
+            }
+
+            set
+            {
+                if (this._bikes_string != value)
+                {
+                    this._bikes_string = value;
+                    this.NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string FreeString
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this._free_string))
+                {
+                    this._free_string = this.free.ToString();
+                }
+                return this._free_string;
+            }
+
+            set
+            {
+                if (this._free_string != value)
+                {
+                    this._free_string = value;
                     this.NotifyPropertyChanged();
                 }
             }

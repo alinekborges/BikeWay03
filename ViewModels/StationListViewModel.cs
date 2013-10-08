@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using BikeWay03.ViewModels;
 
 namespace BikeWay03.ViewModels
 {

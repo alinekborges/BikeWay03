@@ -69,5 +69,22 @@
         </Path>
     </Grid>
 
-    
+    <!-- ApplicationBar -->
+    <phone:PhoneApplicationPage.ApplicationBar>
+        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+            <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.refresh.png" Text="Refresh" Click="RefreshClick"/>
+            <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.timer.png" Text="Timer" Click="TimerClick"/>
+
+            <shell:ApplicationBar.MenuItems>
+                <shell:ApplicationBarMenuItem Text="Directions" />
+                <shell:ApplicationBarMenuItem Text="Favorites" Click="appbar_favorite" />
+                <shell:ApplicationBarMenuItem Text="Nearby" Click="appbar_nearby" />
+                <shell:ApplicationBarMenuItem Text="Routes"  Click="appbar_routes"/>
+                <shell:ApplicationBarMenuItem Text="Settings" />
+            </shell:ApplicationBar.MenuItems>
+        </shell:ApplicationBar>
+    </phone:PhoneApplicationPage.ApplicationBar>
+
+
+
 </phone:PhoneApplicationPage>

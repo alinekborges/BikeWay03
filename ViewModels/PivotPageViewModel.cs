@@ -6,16 +6,42 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BikeWay03.ViewModels;
+using System.Diagnostics;
 
 namespace BikeWay03.ViewModels
 {
     class PivotPageViewModel : INotifyPropertyChanged
     {
 
-        public StationModel station { get; set; }
+        private StationModel station { get; set; }
         public ObservableCollection<StationModel> favoriteList { get; set; }
         public ObservableCollection<StationModel> nearbyList { get; set; }
 
+        public PivotPageViewModel()
+        {
+            this.favoriteList = new ObservableCollection<StationModel>();
+            this.nearbyList = new ObservableCollection<StationModel>();
+        }
+
+        public PivotPageViewModel(StationModel station) 
+        {
+            this.station = station;
+            this.favoriteList = new ObservableCollection<StationModel>();
+            this.nearbyList = new ObservableCollection<StationModel>();
+
+            
+
+            for (int i = 1; i < 8; i++)
+            {
+                this.nearbyList.Add(App.StationListViewModel.StationList[i]);
+
+            }
+
+            this.favoriteList.Add(App.StationListViewModel.StationList[50]);
+            this.favoriteList.Add(App.StationListViewModel.StationList[53]);
+            this.favoriteList.Add(App.StationListViewModel.StationList[54]);
+        }
 
 
         public StationModel Station
@@ -35,41 +61,7 @@ namespace BikeWay03.ViewModels
             }
         }
 
-        public ObservableCollection<StationModel> FavoriteList
-        {
-            get
-            {
-                return this.favoriteList;
-            }
-
-            set
-            {
-                if (this.nearbyList != value)
-                {
-                    this.nearbyList = value;
-                    this.NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public ObservableCollection<StationModel> NearbyList
-        {
-            get
-            {
-                return this.nearbyList;
-            }
-
-            set
-            {
-                if (this.favoriteList != value)
-                {
-                    this.favoriteList = value;
-                    this.NotifyPropertyChanged();
-                }
-            }
-        }
-
-
+   
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

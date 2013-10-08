@@ -16,6 +16,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Shapes;
 using System.Windows.Media;
+using BikeWay03.ViewModels;
+using BikeWay03.Util;
 
 namespace BikeWay03
 {
@@ -30,11 +32,7 @@ namespace BikeWay03
 
             // Set the data context of the LongListSelector control to the sample data
             DataContext = App.StationListViewModel;
-
-
-
-
-
+            
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
         }
@@ -55,20 +53,20 @@ namespace BikeWay03
         }
 
         // Sample code for building a localized ApplicationBar
-        //private void BuildLocalizedApplicationBar()
-        //{
-        //    // Set the page's ApplicationBar to a new instance of ApplicationBar.
-        //    ApplicationBar = new ApplicationBar();
+        private void BuildLocalizedApplicationBar()
+        {
+            // Set the page's ApplicationBar to a new instance of ApplicationBar.
+            ApplicationBar = new ApplicationBar();
 
-        //    // Create a new button and set the text value to the localized string from AppResources.
-        //    ApplicationBarIconButton appBarButton = new ApplicationBarIconButton(new Uri("/Assets/AppBar/appbar.add.rest.png", UriKind.Relative));
-        //    appBarButton.Text = AppResources.AppBarButtonText;
-        //    ApplicationBar.Buttons.Add(appBarButton);
+            // Create a new button and set the text value to the localized string from AppResources.
+            ApplicationBarIconButton appBarButton = new ApplicationBarIconButton(new Uri("/Assets/AppBar/appbar.add.rest.png", UriKind.Relative));
+            appBarButton.Text = AppResources.AppBarButtonText;
+            ApplicationBar.Buttons.Add(appBarButton);
 
-        //    // Create a new menu item with the localized string from AppResources.
-        //    ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
-        //    ApplicationBar.MenuItems.Add(appBarMenuItem);
-        //}
+            // Create a new menu item with the localized string from AppResources.
+            ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
+            ApplicationBar.MenuItems.Add(appBarMenuItem);
+        }
 
         private void UpdatePushpinsOnTheMap(ObservableCollection<StationModel> stationList) 
         {
@@ -91,13 +89,14 @@ namespace BikeWay03
             foreach (var station in stationList)
             {
                 DrawSationPushpin(station, _pushpinsLayer);
+                //Debug.WriteLine(station.ID);
             }
 
             // after we created all pins and put them on a layer, we add this layer to the map
             MapControl.Layers.Add(_pushpinsLayer);
         }
 
-        void path_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        private void path_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
 
             Shape path = sender as Shape;           
@@ -106,11 +105,35 @@ namespace BikeWay03
             {
                 string id = "10";
                 id = path.Tag.ToString();
-                Debug.WriteLine(id);
+                //
+                Debug.WriteLine("id of station sent to pivot= " +id);
                 NavigationService.Navigate(new Uri("/PivotPage.xaml?" 
-                            + "stationID="+ id, UriKind.Relative));
+                            + "stationID="+ id + "&navigatedFrom=" + PivotEnum.pushPinTap.ToString(), UriKind.Relative));
             }
 
+
+        }
+        private void appbar_favorite(object sender, EventArgs e)
+        {
+      
+            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "navigatedFrom=" + PivotEnum.AppBar_Favorites, UriKind.Relative));
+      
+        }
+
+        private void appbar_nearby(object sender, EventArgs e)
+        {
+
+            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "navigatedFrom=" + PivotEnum.AppBar_Nearby, UriKind.Relative));
+
+        }
+
+        private void appbar_routes(object sender, EventArgs e)
+        {
+
+            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "navigatedFrom=" + PivotEnum.AppBar_Routes, UriKind.Relative));
 
         } 
 
@@ -127,7 +150,8 @@ namespace BikeWay03
             {
                 //calculate the porcentage of bikes in the station
                 percentage = bikes / total;
-                Debug.WriteLine(percentage);
+                station.percentage = percentage;
+                //Debug.WriteLine(percentage);
             }
 
             percentage = 0.135;
@@ -140,8 +164,8 @@ namespace BikeWay03
             double angle_bikes = percentage * 2 * Math.PI;            
             double angle_racks = (2 * Math.PI) - angle_bikes;
 
-            Debug.WriteLine(angle_bikes);
-            Debug.WriteLine(angle_racks);
+            //Debug.WriteLine(angle_bikes);
+            //Debug.WriteLine(angle_racks);
 
             GeoCoordinate coordinate = station.GeoCoordinate;
 
@@ -178,7 +202,7 @@ namespace BikeWay03
             path.Stroke = new SolidColorBrush(Colors.Green);
             
             //tag the pushpin with the station id;
-            path.Tag = station.ID;
+            path.Tag = App.StationListViewModel.StationList.IndexOf(station);
             path.Tap += path_Tap;
 
             SolidColorBrush gray = new SolidColorBrush(Colors.Gray);
@@ -189,7 +213,7 @@ namespace BikeWay03
             gray_circle.Height = small_radius *2 ;
             gray_circle.Fill = gray;
             //tag the pushpin with the station id;
-            gray_circle.Tag = station.ID;
+            gray_circle.Tag = App.StationListViewModel.StationList.IndexOf(station);
             gray_circle.Tap += path_Tap;
 
 
@@ -237,7 +261,7 @@ namespace BikeWay03
 
 
             //tag the pushpin with the station id;
-            path_r.Tag = station.ID;
+            path_r.Tag = App.StationListViewModel.StationList.IndexOf(station);
             path_r.Tap += path_Tap;
             
 
@@ -246,7 +270,7 @@ namespace BikeWay03
             rect.Height = radius * 2;
             rect.Fill = new SolidColorBrush(Colors.Black);
             //tag the pushpin with the station id;
-            rect.Tag = station.ID;
+            rect.Tag = App.StationListViewModel.StationList.IndexOf(station);
             rect.Tap += path_Tap;
 
             //GeometryGroup pie = new GeometryGroup();
@@ -278,9 +302,18 @@ namespace BikeWay03
             overlay.PositionOrigin = new Point(1, 1);
             _pushpinsLayer.Add(overlay);
 
-            
 
        }
+
+        private void RefreshClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void TimerClick(object sender, EventArgs e)
+        {
+
+        }
 
 
     }
