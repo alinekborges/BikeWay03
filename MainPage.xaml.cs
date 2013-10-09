@@ -18,6 +18,7 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using BikeWay03.ViewModels;
 using BikeWay03.Util;
+using BikeWay03.DB;
 
 namespace BikeWay03
 {
@@ -32,6 +33,8 @@ namespace BikeWay03
 
             // Set the data context of the LongListSelector control to the sample data
             DataContext = App.StationListViewModel;
+
+            Database.initializeDatabase();
             
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();

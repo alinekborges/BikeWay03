@@ -8,6 +8,9 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using BikeWay03.Resources;
 using BikeWay03.ViewModels;
+using System.IO;
+using Windows.Storage;
+using BikeWay03.DB;
 
 namespace BikeWay03
 {
@@ -15,7 +18,9 @@ namespace BikeWay03
     {
         private static MainViewModel viewModel = null;
         private static StationListViewModel stationListViewModel;
+        private static PivotPageViewModel pivotPageViewModel;
         public static bool OfflineMode = true;
+
 
         /// <summary>
         /// A static ViewModel used by the views to bind against.
@@ -30,6 +35,18 @@ namespace BikeWay03
                     viewModel = new MainViewModel();
 
                 return viewModel;
+            }
+        }
+
+        public static PivotPageViewModel PivotPageViewModel
+        {
+            get
+            {
+                // Delay creation of the view model until necessary
+                if (pivotPageViewModel == null)
+                    pivotPageViewModel = new PivotPageViewModel();
+
+                return pivotPageViewModel;
             }
         }
 
@@ -113,6 +130,8 @@ namespace BikeWay03
                 App.StationListViewModel.LoadDataFromAPI();
                 Debug.WriteLine("AplicationActivated");
             }
+
+            
         }
 
         // Code to execute when the application is deactivated (sent to background)

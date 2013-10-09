@@ -5,7 +5,7 @@
     xmlns:sm="clr-namespace:BikeWay03">
 
     <vm:PivotPageViewModel.Station>
-        <vm:StationModel ID="0" bikes="15" free="14" name="01 - GEORGE ST/LALALA"/>
+        <vm:StationModel ID="1" bikes="15" free="14" name="01 - GEORGE ST/LALALA" />
     </vm:PivotPageViewModel.Station>
     
     <vm:PivotPageViewModel.nearbyList>

@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace BikeWay03.ViewModels
 {
-    class PivotPageViewModel : INotifyPropertyChanged
+    public class PivotPageViewModel : INotifyPropertyChanged
     {
 
         private StationModel station { get; set; }
@@ -32,17 +32,29 @@ namespace BikeWay03.ViewModels
 
             
 
+            
+
+            //this.favoriteList.Add(App.StationListViewModel.StationList[50]);
+            //this.favoriteList.Add(App.StationListViewModel.StationList[53]);
+            //this.favoriteList.Add(App.StationListViewModel.StationList[54]);
+        }
+
+
+        public ObservableCollection<StationModel> calculateNearbyList(StationModel station)
+        {
+
             for (int i = 1; i < 8; i++)
             {
                 this.nearbyList.Add(App.StationListViewModel.StationList[i]);
 
             }
 
-            this.favoriteList.Add(App.StationListViewModel.StationList[50]);
-            this.favoriteList.Add(App.StationListViewModel.StationList[53]);
-            this.favoriteList.Add(App.StationListViewModel.StationList[54]);
-        }
+            //this.favoriteList.Add(App.StationListViewModel.StationList[50]);
+            //this.favoriteList.Add(App.StationListViewModel.StationList[53]);
+            //this.favoriteList.Add(App.StationListViewModel.StationList[54]);
 
+            return this.nearbyList;
+        }
 
         public StationModel Station
         {
@@ -55,7 +67,9 @@ namespace BikeWay03.ViewModels
             {
                 if (this.station != value)
                 {
+                    
                     this.station = value;
+                    calculateNearbyList(this.station);
                     this.NotifyPropertyChanged();
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Phone.Maps.Controls;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,19 +11,10 @@ using System.Threading.Tasks;
 
 namespace BikeWay03.ViewModels
 {
-    public class StationModel : INotifyPropertyChanged
+   
+    public class StationModel : StationBase
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public int lat { get; set; }
-        public int lng { get; set; }
-        public int number { get; set; }
-        public int bikes { get; set; }
-        public int free { get; set; }
-        public string station_url { get; set; }
-        public double percentage { get; set; }
-        public string _bikes_string { get; set; }
-        public string _free_string { get; set; }
+        
 
         public int ID
         {
@@ -89,6 +81,29 @@ namespace BikeWay03.ViewModels
             }
         }
 
+        public StationBase getStationBase()
+        {
+            StationBase station = new StationBase
+            {
+                
+                id = this.id,
+                name = this.name,
+                lat = this.lat,
+                lng = this.lng,
+                number = this.number,
+                bikes = this.bikes,
+                free = this.free,
+                station_url =  this.station_url,
+                percentage = this.percentage,
+                _bikes_string  = this._bikes_string,
+                _free_string = this._free_string,
+                IsFavorite = this.IsFavorite
+                
+            };
+
+            return station;
+        }
+
         public string BikesString
         {
             get
@@ -131,6 +146,26 @@ namespace BikeWay03.ViewModels
             }
         }
 
+        public static StationModel getStationModel(StationBase stationBase)
+        {
+            StationModel station = new StationModel
+            {
+                id = stationBase.id,
+                name = stationBase.name,
+                lat = stationBase.lat,
+                lng = stationBase.lng,
+                number = stationBase.number,
+                bikes = stationBase.bikes,
+                free = stationBase.free,
+                station_url = stationBase.station_url,
+                percentage = stationBase.percentage,
+                _bikes_string = stationBase._bikes_string,
+                _free_string = stationBase._free_string,
+                IsFavorite = stationBase.IsFavorite
+            };
+
+            return station;
+        }
 
 
         //        id: CityBikes station id

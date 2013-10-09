@@ -17,7 +17,7 @@
     <phone:PhoneApplicationPage.Resources>
 
         <shell:ApplicationBar x:Key="Station" IsVisible="True">
-            <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.star.png" Text="Favorite" />
+            <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.star.png" Text="Favorite" Click="favoriteThisStation" />
         </shell:ApplicationBar>
 
         <shell:ApplicationBar x:Key="secondPivotTabApplicationBar" IsVisible="True">
@@ -228,7 +228,7 @@
             </phone:PivotItem>
 
             <phone:PivotItem Header="favorites">
-                <phone:LongListSelector Margin="30,30,10,10" ItemsSource="{Binding nearbyList}">
+                <phone:LongListSelector Margin="30,30,10,10" ItemsSource="{Binding favoriteList}">
                     <phone:LongListSelector.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="12,2,0,4" Height="105" Width="432">

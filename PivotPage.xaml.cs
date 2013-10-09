@@ -10,13 +10,14 @@ using Microsoft.Phone.Shell;
 using BikeWay03.ViewModels;
 using System.Diagnostics;
 using BikeWay03.Util;
+using BikeWay03.DB;
 
 namespace BikeWay03
 {
     public partial class PivotPage : PhoneApplicationPage
     {
 
-        PivotPageViewModel viewModel;
+        //PivotPageViewModel viewModel;
 
 
         public PivotPage()
@@ -24,12 +25,20 @@ namespace BikeWay03
 
             InitializeComponent();
 
-            this.viewModel = new PivotPageViewModel();
+            //this.viewModel = new PivotPageViewModel();
 
-            this.DataContext = viewModel;
-            
-            
-                
+
+            this.DataContext = App.PivotPageViewModel;
+            Database.getFavorites();
+
+            try
+            {
+                //Database.SaveStations(App.StationListViewModel.StationList);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
             
         }
         private void PivotPage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -71,8 +80,11 @@ namespace BikeWay03
                         {
                             Debug.WriteLine(id);
                             int id_ = Convert.ToInt32(id) - 1;
-                            this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[id_]);
-                            DataContext = viewModel;
+
+                            App.PivotPageViewModel.Station = App.StationListViewModel.StationList[id_];
+                            DataContext = App.PivotPageViewModel;
+                            //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[id_]);
+                            //DataContext = viewModel;
                             //this.viewModel.Station = App.StationListViewModel.StationList[id_];
                         }
                     }
@@ -81,8 +93,8 @@ namespace BikeWay03
                 if (String.Equals(navigatedFrom, PivotEnum.AppBar_Nearby.ToString()))
                 {
 
-                    this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
-                    DataContext = viewModel;
+                    //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
+                    //DataContext = viewModel;
                     this.Pivot.SelectedIndex = 1;
                     Pivot.Items.RemoveAt(0);
                 }
@@ -90,8 +102,8 @@ namespace BikeWay03
                 if (String.Equals(navigatedFrom, PivotEnum.AppBar_Favorites.ToString()))
                 {
                    
-                    this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
-                    DataContext = viewModel;
+                    //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
+                    //DataContext = viewModel;
                     this.Pivot.SelectedIndex = 2;
                     Pivot.Items.RemoveAt(0);
                 }
@@ -99,8 +111,8 @@ namespace BikeWay03
                 if (String.Equals(navigatedFrom, PivotEnum.AppBar_Routes.ToString()))
                 {
 
-                    this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
-                    DataContext = viewModel;
+                    //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
+                    //DataContext = viewModel;
                     this.Pivot.SelectedIndex = 3;
                     Pivot.Items.RemoveAt(0);
                 }
@@ -108,6 +120,29 @@ namespace BikeWay03
 
             updateBars();
         }
+
+        private void favoriteThisStation(object sender, EventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.Station;
+
+            if (station != null)
+            {
+                if (station.IsFavorite == true)
+                {
+                    station.IsFavorite = false;
+                }
+                else
+                {
+                    station.IsFavorite = true; 
+                }
+                //   
+                Database.UpdateFavoriteStation(station);
+            }
+
+            this.Pivot.SelectedIndex = 2;
+            
+        }
+
 
 
         public void updateBars()
@@ -118,7 +153,6 @@ namespace BikeWay03
             Debug.WriteLine(width.ToString());
             //this.green_1.Width = width * this.viewModel.nearbyList[0].percentage;
 
-            
 
         }
     }

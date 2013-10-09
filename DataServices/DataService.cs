@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using BikeWay03.ViewModels;
+using BikeWay03.DB;
 
 namespace BikeWay03.DataServices
 {
@@ -37,12 +38,17 @@ namespace BikeWay03.DataServices
         {
             string stations;
 
+            
+
             if (loadText(filename, out stations) == true)
             {
                 Debug.WriteLine("reding saved stations");
                 Debug.WriteLine(stations);
 
                 List<StationModel> stationList = JsonConvert.DeserializeObject<List<StationModel>>(stations);
+
+
+                
 
                 if (stationList != null)
                 {
@@ -51,7 +57,11 @@ namespace BikeWay03.DataServices
                     {
                         App.StationListViewModel.StationList.Add(station);
                     }
+
+                    //Database.initializeDatabase();
+                    
                     return true;
+
                 }
                 else
                 {
