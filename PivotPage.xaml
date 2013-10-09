@@ -16,8 +16,12 @@
     
     <phone:PhoneApplicationPage.Resources>
 
-        <shell:ApplicationBar x:Key="Station" IsVisible="True">
+        <shell:ApplicationBar x:Key="StationNotFavorite" IsVisible="True">
             <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.star.png" Text="Favorite" Click="favoriteThisStation" />
+        </shell:ApplicationBar>
+
+        <shell:ApplicationBar x:Key="StationIsFavorite" IsVisible="True">
+            <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.star.remove.png" Text="Favorite" Click="favoriteThisStation" />
         </shell:ApplicationBar>
 
         <shell:ApplicationBar x:Key="secondPivotTabApplicationBar" IsVisible="True">

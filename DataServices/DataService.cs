@@ -38,8 +38,6 @@ namespace BikeWay03.DataServices
         {
             string stations;
 
-            
-
             if (loadText(filename, out stations) == true)
             {
                 Debug.WriteLine("reding saved stations");
@@ -47,8 +45,6 @@ namespace BikeWay03.DataServices
 
                 List<StationModel> stationList = JsonConvert.DeserializeObject<List<StationModel>>(stations);
 
-
-                
 
                 if (stationList != null)
                 {
@@ -58,6 +54,7 @@ namespace BikeWay03.DataServices
                         App.StationListViewModel.StationList.Add(station);
                     }
 
+                    //MainPage.UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
                     //Database.initializeDatabase();
                     
                     return true;
@@ -86,12 +83,14 @@ namespace BikeWay03.DataServices
                 Debug.WriteLine(result);
                 saveText(filename, result);
                 List<StationModel> stationList = JsonConvert.DeserializeObject<List<StationModel>>(result);
+
                 if (stationList != null)
                 {
-
+                    
                     foreach (StationModel station in stationList)
                     {
                         App.StationListViewModel.StationList.Add(station);
+                        Debug.WriteLine("adding station");
                     }
 
                 }

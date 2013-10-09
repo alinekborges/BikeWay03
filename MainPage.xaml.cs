@@ -26,6 +26,8 @@ namespace BikeWay03
     {
         MapLayer _pushpinsLayer;
 
+
+
         // Constructor
         public MainPage()
         {
@@ -35,10 +37,14 @@ namespace BikeWay03
             DataContext = App.StationListViewModel;
 
             Database.initializeDatabase();
+
+           
             
-            // Sample code to localize the ApplicationBar
+           
+            // Sample code to localize the ApplicationBarupda
             //BuildLocalizedApplicationBar();
         }
+
 
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -102,7 +108,9 @@ namespace BikeWay03
         private void path_Tap(object sender, System.Windows.Input.GestureEventArgs e)
         {
 
-            Shape path = sender as Shape;           
+            Shape path = sender as Shape;
+
+            MapControl.Layers.Remove(_pushpinsLayer); 
 
             if (path != null)
             {
@@ -118,7 +126,7 @@ namespace BikeWay03
         }
         private void appbar_favorite(object sender, EventArgs e)
         {
-      
+            MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
                             + "navigatedFrom=" + PivotEnum.AppBar_Favorites, UriKind.Relative));
       
@@ -126,7 +134,7 @@ namespace BikeWay03
 
         private void appbar_nearby(object sender, EventArgs e)
         {
-
+            MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
                             + "navigatedFrom=" + PivotEnum.AppBar_Nearby, UriKind.Relative));
 
@@ -134,7 +142,7 @@ namespace BikeWay03
 
         private void appbar_routes(object sender, EventArgs e)
         {
-
+            MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
                             + "navigatedFrom=" + PivotEnum.AppBar_Routes, UriKind.Relative));
 
@@ -157,7 +165,7 @@ namespace BikeWay03
                 //Debug.WriteLine(percentage);
             }
 
-            percentage = 0.135;
+            //percentage = 0.5;
             //if the arc is more than 180degress, it is a large arc
             bool isLargeArc = false;
             if (percentage >= 0.5)
@@ -285,11 +293,11 @@ namespace BikeWay03
             //***********************************************************
             // Create a MapOverlay and add marker
 
-            MapOverlay overlay_rect = new MapOverlay();
-            overlay_rect.Content = rect;
-            overlay_rect.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
-            overlay_rect.PositionOrigin = new Point(0.5, 0.5);
-            _pushpinsLayer.Add(overlay_rect);
+            //MapOverlay overlay_rect = new MapOverlay();
+            //overlay_rect.Content = rect;
+            //overlay_rect.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
+            //overlay_rect.PositionOrigin = new Point(0.5, 0.5);
+            //_pushpinsLayer.Add(overlay_rect);
 
             MapOverlay overlay_r = new MapOverlay();
             overlay_r.Content = gray_circle;
@@ -302,7 +310,7 @@ namespace BikeWay03
             MapOverlay overlay = new MapOverlay();
             overlay.Content = path;
             overlay.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
-            overlay.PositionOrigin = new Point(1, 1);
+            overlay.PositionOrigin = new Point(0, 0);
             _pushpinsLayer.Add(overlay);
 
 
@@ -316,6 +324,14 @@ namespace BikeWay03
         private void TimerClick(object sender, EventArgs e)
         {
 
+        }
+
+
+
+
+        private void MapControl_ZoomLevelChanged(object sender, MapZoomLevelChangedEventArgs e)
+        {
+            Debug.WriteLine(this.MapControl.ZoomLevel);
         }
 
 

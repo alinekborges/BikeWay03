@@ -118,6 +118,7 @@
       <DependentUpon>TimerPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\PivotEnum.cs" />
+    <Compile Include="ViewModels\NetworkModel.cs" />
     <Compile Include="ViewModels\PivotPageViewModel.cs" />
     <Compile Include="ViewModels\StationBase.cs" />
     <Compile Include="ViewModels\StationModel.cs" />
@@ -171,6 +172,7 @@
     </Content>
     <Content Include="Assets\bike_green.png" />
     <Content Include="Assets\Icons\appbar.star.png" />
+    <Content Include="Assets\Icons\appbar.star.remove.png" />
     <Content Include="Assets\Icons\appbar.timer.png" />
     <Content Include="Assets\rack_red.png" />
     <Content Include="Assets\Tiles\FlipCycleTileLarge.png">

@@ -19,7 +19,7 @@ namespace BikeWay03
         private static MainViewModel viewModel = null;
         private static StationListViewModel stationListViewModel;
         private static PivotPageViewModel pivotPageViewModel;
-        public static bool OfflineMode = true;
+        public static bool OfflineMode = false;
 
 
         /// <summary>

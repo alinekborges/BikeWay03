@@ -48,7 +48,18 @@ namespace BikeWay03
             switch (((Pivot)sender).SelectedIndex)
             {
                 case 0:
-                    pivotResource = "Station";
+                    if (App.PivotPageViewModel.Station != null)
+                    {
+                        if (App.PivotPageViewModel.Station.IsFavorite == true)
+                        {
+                            pivotResource = "StationIsFavorite";
+                        }
+                        else
+                        {
+                            pivotResource = "StationNotFavorite";
+                        }
+                    }
+                    
                     break;
 
                 case 1:
