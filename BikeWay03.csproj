@@ -94,12 +94,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\database.cs" />
+    <Compile Include="Database\Database.cs" />
     <Compile Include="DataServices\DataService.cs" />
     <Compile Include="LocalizedStrings.cs" />
-    <Compile Include="DetailsPage.xaml.cs">
-      <DependentUpon>DetailsPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -118,23 +115,20 @@
       <DependentUpon>TimerPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\PivotEnum.cs" />
+    <Compile Include="Util\Settings.cs" />
+    <Compile Include="ViewModels\NetworkBase.cs" />
     <Compile Include="ViewModels\NetworkModel.cs" />
     <Compile Include="ViewModels\PivotPageViewModel.cs" />
     <Compile Include="ViewModels\StationBase.cs" />
     <Compile Include="ViewModels\StationModel.cs" />
     <Compile Include="ViewModels\ItemViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="ViewModels\StationListViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
-    <Page Include="DetailsPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

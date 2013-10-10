@@ -9,8 +9,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using BikeWay03.ViewModels;
 using BikeWay03.DB;
+using BikeWay03.Util;
 
 namespace BikeWay03.DataServices
 {
@@ -18,6 +18,8 @@ namespace BikeWay03.DataServices
     {
         public static string filename = "stations.txt";
         public static string result;
+
+        public static string networkUrl = "http://api.citybik.es/networks.json";
 
 
         public static void GetStationList(string urlToCall)
@@ -34,6 +36,13 @@ namespace BikeWay03.DataServices
             }
         }
 
+        public static void GetNetworkList()
+        {
+            WebClient client = new WebClient();
+            client.DownloadStringCompleted += client_DownloadStringNetworkCompleted;
+            client.DownloadStringAsync(new Uri(networkUrl));
+        }
+
         public static bool GetStationListOffline()
         {
             string stations;
@@ -48,12 +57,15 @@ namespace BikeWay03.DataServices
 
                 if (stationList != null)
                 {
+                    
 
                     foreach (StationModel station in stationList)
                     {
-                        App.StationListViewModel.StationList.Add(station);
+                        App.MainViewModel.StationList.Add(station);
                     }
 
+                   
+                    
                     //MainPage.UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
                     //Database.initializeDatabase();
                     
@@ -81,7 +93,7 @@ namespace BikeWay03.DataServices
                 result = e.Result;
                 Debug.WriteLine("reading from API...");
                 Debug.WriteLine(result);
-                saveText(filename, result);
+                //saveText(filename, result);
                 List<StationModel> stationList = JsonConvert.DeserializeObject<List<StationModel>>(result);
 
                 if (stationList != null)
@@ -89,10 +101,40 @@ namespace BikeWay03.DataServices
                     
                     foreach (StationModel station in stationList)
                     {
-                        App.StationListViewModel.StationList.Add(station);
-                        Debug.WriteLine("adding station");
+                        App.MainViewModel.StationList.Add(station);                       
+                    }
+                    Database.SaveStations(App.MainViewModel.StationList);
+                    App.MainPage.UpdatePushpinsOnTheMap(App.MainViewModel.StationList);
+                }
+
+            }
+            else
+            {
+                Debug.WriteLine("ERROR downloading api");
+            }
+        }
+
+        private static void client_DownloadStringNetworkCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+            if (e.Error == null)
+            {
+                result = e.Result;
+                Debug.WriteLine("reading networks......");
+                Debug.WriteLine(result);
+                //saveText(filename, result);
+                List<NetworkModel> networkList = JsonConvert.DeserializeObject<List<NetworkModel>>(result);
+
+                if (networkList != null)
+                {
+
+                    foreach (NetworkModel network in networkList)
+                    {
+                        App.MainViewModel.NetworkList.Add(network);
+                        //App.StationListViewModel.StationList.Add(station);
                     }
 
+                    Database.SaveNetworks(App.MainViewModel.NetworkList);
+                    Debug.WriteLine("network size = " + networkList.Count);
                 }
 
             }

@@ -92,7 +92,7 @@ namespace BikeWay03
                             Debug.WriteLine(id);
                             int id_ = Convert.ToInt32(id) - 1;
 
-                            App.PivotPageViewModel.Station = App.StationListViewModel.StationList[id_];
+                            App.PivotPageViewModel.Station = App.MainViewModel.StationList[id_];
                             DataContext = App.PivotPageViewModel;
                             //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[id_]);
                             //DataContext = viewModel;

@@ -16,27 +16,13 @@ namespace BikeWay03
 {
     public partial class App : Application
     {
-        private static MainViewModel viewModel = null;
-        private static StationListViewModel stationListViewModel;
+        private static MainViewModel mainViewModel;
         private static PivotPageViewModel pivotPageViewModel;
         public static bool OfflineMode = false;
 
+        public static MainPage MainPage;
 
-        /// <summary>
-        /// A static ViewModel used by the views to bind against.
-        /// </summary>
-        /// <returns>The MainViewModel object.</returns>
-        public static MainViewModel ViewModel
-        {
-            get
-            {
-                // Delay creation of the view model until necessary
-                if (viewModel == null)
-                    viewModel = new MainViewModel();
 
-                return viewModel;
-            }
-        }
 
         public static PivotPageViewModel PivotPageViewModel
         {
@@ -50,18 +36,18 @@ namespace BikeWay03
             }
         }
 
-        public static StationListViewModel StationListViewModel
+        public static MainViewModel MainViewModel
         {
             get
             {
                 // Delay creation of the view model until necessary
-                if (stationListViewModel == null)
+                if (mainViewModel == null)
                 {
-                    stationListViewModel = new StationListViewModel();
+                    mainViewModel = new MainViewModel();
                     Debug.WriteLine("constructing...");
                 }
 
-                return stationListViewModel;
+                return mainViewModel;
             }
         }
 
@@ -119,15 +105,10 @@ namespace BikeWay03
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
-            // Ensure that application state is restored appropriately
-            if (!App.ViewModel.IsDataLoaded)
-            {
-                App.ViewModel.LoadData();
-            }
 
-            if (!App.StationListViewModel.IsDataLoaded)
+            if (!App.MainViewModel.IsDataLoaded)
             {
-                App.StationListViewModel.LoadDataFromAPI();
+                App.MainViewModel.LoadDataFromAPI();
                 Debug.WriteLine("AplicationActivated");
             }
 

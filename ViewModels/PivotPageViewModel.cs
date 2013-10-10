@@ -45,7 +45,7 @@ namespace BikeWay03.ViewModels
 
             for (int i = 1; i < 8; i++)
             {
-                this.nearbyList.Add(App.StationListViewModel.StationList[i]);
+                this.nearbyList.Add(App.MainViewModel.StationList[i]);
 
             }
 

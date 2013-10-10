@@ -1,4 +1,5 @@
-﻿using BikeWay03.ViewModels;
+﻿using BikeWay03.Util;
+using BikeWay03.ViewModels;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace BikeWay03.DB
     {
         public static SQLiteAsyncConnection sqliteConnection;
         public static ObservableCollection<StationModel> stationList;
-        public static string databaseName = "database9.db";
+        public static string databaseName = "database_bikeway.db";
         public static string dbPath;
 
         public static void initializeDatabase() 
@@ -28,7 +29,7 @@ namespace BikeWay03.DB
             sqliteConnection = new SQLiteAsyncConnection ( dbPath );
 
             CreateDatabase();
-            Debug.WriteLine("database initialized");
+            
         }
 
         private static async void CreateDatabase()
@@ -40,7 +41,8 @@ namespace BikeWay03.DB
                 if (!storage.FileExists(databaseName))
                 {
                     await sqliteConnection.CreateTableAsync<StationBase>();
-                    Debug.WriteLine("table created");
+                    await sqliteConnection.CreateTableAsync<NetworkBase>();
+                    Debug.WriteLine("Database Tables Created");
 
                 }
             }
@@ -66,9 +68,35 @@ namespace BikeWay03.DB
             if (inserted > 0)
             {
                 //UpdateCustomersList();
-                Debug.WriteLine("database changed succesfully - lines changed: " + inserted.ToString());
+                Debug.WriteLine("adding stations : database changed succesfully - lines changed: " + inserted.ToString());
+                Settings.IsStationSavedToDatabase = true;
             }
         }
+        public static async void SaveNetworks(ObservableCollection<NetworkModel> networkList)
+        {
+            //int inserted = await sqlite
+            //int inserted = await sqliteConnection.in
+
+            List<NetworkBase> networkBaseList = new List<NetworkBase>();
+
+            foreach (NetworkModel network in networkList)
+            {
+                networkBaseList.Add(network.getNetworkBase());
+            }
+
+            //StationBase station = stationList[0].getStationBase();
+
+            int inserted = await sqliteConnection.InsertAllAsync(networkBaseList);
+
+            // If insertion successfull we update our view
+            if (inserted > 0)
+            {
+                //UpdateCustomersList();
+                Debug.WriteLine("adding networks : database changed succesfully - lines changed: " + inserted.ToString());
+                Settings.IsNetworkSavedToDatabase = true;
+            }
+        }
+
 
         public static async void getFavorites()
         {
@@ -116,44 +144,7 @@ namespace BikeWay03.DB
             
         }
 
-        private async void UpdateCustomersList()
-        {
-            // Select all customers from database
-            // 'var' is a shortcut for List<Customer> type
-            //var results = await sqliteConnection.QueryAsync<Customer>("select * from person");
-
-            // Just for a quick demo, we select the last added customer and add to our collection
-            //Customer customer = results.Last();
-            //customers.Add(customer);
-        }
     }
 
-    [Table("station")]
-    public class Station
-    {
-        // The Column attribute maps the name of this property with name of database column
-        [Column("name")]
-        public string Name { get; set; }
-        public int Free { get; set; }
-        public int Bikes { get; set; }
-    }
-
-    [Table("station_model")]
-    public class Station_Model
-    {
-        [Column("id")]
-        public int id { get; set; }
-        public string name { get; set; }
-        public int lat { get; set; }
-        public int lng { get; set; }
-        public int number { get; set; }
-        public int bikes { get; set; }
-        public int free { get; set; }
-        public string station_url { get; set; }
-        public double percentage { get; set; }
-        public string _bikes_string { get; set; }
-        public string _free_string { get; set; }
-   
-
-    }
+  
 }

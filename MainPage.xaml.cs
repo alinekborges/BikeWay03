@@ -26,20 +26,20 @@ namespace BikeWay03
     {
         MapLayer _pushpinsLayer;
 
-
-
         // Constructor
         public MainPage()
         {
             InitializeComponent();
 
+            App.MainPage = this;
             // Set the data context of the LongListSelector control to the sample data
-            DataContext = App.StationListViewModel;
+            DataContext = App.MainViewModel;
 
             Database.initializeDatabase();
 
-           
-            
+            Settings.loadAllSettings();
+
+            Debug.WriteLine("is Network loaded = " + Settings.IsNetworkSavedToDatabase.ToString());
            
             // Sample code to localize the ApplicationBarupda
             //BuildLocalizedApplicationBar();
@@ -49,15 +49,14 @@ namespace BikeWay03
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (!App.ViewModel.IsDataLoaded)
-            {
-                App.ViewModel.LoadData();
-            }
 
-            if (!App.StationListViewModel.IsDataLoaded)
+
+            if (!App.MainViewModel.IsDataLoaded)
             {
-                App.StationListViewModel.LoadDataFromAPI();
-                UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
+                App.MainPage = this;
+                App.MainViewModel.LoadDataFromAPI();
+                UpdatePushpinsOnTheMap(App.MainViewModel.StationList);
+                //App.MainPage.UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
             }
         }
 
@@ -77,10 +76,10 @@ namespace BikeWay03
             ApplicationBar.MenuItems.Add(appBarMenuItem);
         }
 
-        private void UpdatePushpinsOnTheMap(ObservableCollection<StationModel> stationList) 
+        public void UpdatePushpinsOnTheMap(ObservableCollection<StationModel> stationList) 
         {
 
-
+            Debug.WriteLine("UpdatingPushpins");
             /* 
              * we need to have a local MapLayer variable in this class to add and remove it from the map
              * otherwise you'll have a lot of layers. Here it's a "_pushpinsLayer"
@@ -110,7 +109,8 @@ namespace BikeWay03
 
             Shape path = sender as Shape;
 
-            MapControl.Layers.Remove(_pushpinsLayer); 
+    
+            //MapControl.Layers.Remove(_pushpinsLayer); 
 
             if (path != null)
             {
@@ -126,7 +126,7 @@ namespace BikeWay03
         }
         private void appbar_favorite(object sender, EventArgs e)
         {
-            MapControl.Layers.Remove(_pushpinsLayer);
+            //MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
                             + "navigatedFrom=" + PivotEnum.AppBar_Favorites, UriKind.Relative));
       
@@ -134,7 +134,7 @@ namespace BikeWay03
 
         private void appbar_nearby(object sender, EventArgs e)
         {
-            MapControl.Layers.Remove(_pushpinsLayer);
+            //MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
                             + "navigatedFrom=" + PivotEnum.AppBar_Nearby, UriKind.Relative));
 
@@ -142,7 +142,7 @@ namespace BikeWay03
 
         private void appbar_routes(object sender, EventArgs e)
         {
-            MapControl.Layers.Remove(_pushpinsLayer);
+            //MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
                             + "navigatedFrom=" + PivotEnum.AppBar_Routes, UriKind.Relative));
 
@@ -213,7 +213,7 @@ namespace BikeWay03
             path.Stroke = new SolidColorBrush(Colors.Green);
             
             //tag the pushpin with the station id;
-            path.Tag = App.StationListViewModel.StationList.IndexOf(station);
+            path.Tag = App.MainViewModel.StationList.IndexOf(station);
             path.Tap += path_Tap;
 
             SolidColorBrush gray = new SolidColorBrush(Colors.Gray);
@@ -224,7 +224,7 @@ namespace BikeWay03
             gray_circle.Height = small_radius *2 ;
             gray_circle.Fill = gray;
             //tag the pushpin with the station id;
-            gray_circle.Tag = App.StationListViewModel.StationList.IndexOf(station);
+            gray_circle.Tag = App.MainViewModel.StationList.IndexOf(station);
             gray_circle.Tap += path_Tap;
 
 
@@ -272,7 +272,7 @@ namespace BikeWay03
 
 
             //tag the pushpin with the station id;
-            path_r.Tag = App.StationListViewModel.StationList.IndexOf(station);
+            path_r.Tag = App.MainViewModel.StationList.IndexOf(station);
             path_r.Tap += path_Tap;
             
 
@@ -281,7 +281,7 @@ namespace BikeWay03
             rect.Height = radius * 2;
             rect.Fill = new SolidColorBrush(Colors.Black);
             //tag the pushpin with the station id;
-            rect.Tag = App.StationListViewModel.StationList.IndexOf(station);
+            rect.Tag = App.MainViewModel.StationList.IndexOf(station);
             rect.Tap += path_Tap;
 
             //GeometryGroup pie = new GeometryGroup();
