@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Text;
@@ -12,11 +13,13 @@ namespace BikeWay03.Util
         
         public enum settingKey{
             isNetworkSavedToDatabase,
-            isStationSavedToDatabase
+            isStationSavedToDatabase,
+            lastUpdatedTimeSpan
         };
 
         private static bool isNetworkSavedToDatabase = false;
         private static bool isStationSavedToDatabase = false;
+        private static TimeSpan lastUpdatedTimeSpan;
 
         public static bool IsNetworkSavedToDatabase
         {
@@ -50,12 +53,28 @@ namespace BikeWay03.Util
             }
         }
 
+        public static TimeSpan LastUpdatedTimeSpan
+        {
+            get
+            {
+                return lastUpdatedTimeSpan;
+            }
+            set
+            {
+                if (TimeSpan.Equals(lastUpdatedTimeSpan,value))
+                {
+                    lastUpdatedTimeSpan = value;
+                    saveKey(settingKey.lastUpdatedTimeSpan, value);
+                }
+            }
+        }
 
 
         public static IsolatedStorageSettings settings = IsolatedStorageSettings.ApplicationSettings;
 
         public static void saveKey(settingKey key, object value)
         {
+            Debug.WriteLine("trying to save a setting: " + key.ToString());
             if (!settings.Contains(key.ToString()))
             {
                 settings.Add(key.ToString(), value);
@@ -100,6 +119,16 @@ namespace BikeWay03.Util
             else
             {
                 isStationSavedToDatabase = false;
+            }
+
+            value = getKey(settingKey.lastUpdatedTimeSpan);
+            if (value != null)
+            {
+                lastUpdatedTimeSpan = (TimeSpan)value;
+            }
+            else
+            {
+                lastUpdatedTimeSpan = new TimeSpan();
             }
 
         }

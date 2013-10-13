@@ -16,15 +16,21 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Shapes;
 using System.Windows.Media;
-using BikeWay03.ViewModels;
 using BikeWay03.Util;
 using BikeWay03.DB;
+using System.Windows.Media.Imaging;
+using System.Threading.Tasks;
+using Windows.Devices.Geolocation;
 
 namespace BikeWay03
 {
+
+
     public partial class MainPage : PhoneApplicationPage
     {
-        MapLayer _pushpinsLayer;
+        MapLayer _pushpinsStationsLayer;
+        MapLayer _pushpinsNetworksLayer;
+        Geolocator geolocatorWP8;
 
         // Constructor
         public MainPage()
@@ -39,7 +45,11 @@ namespace BikeWay03
 
             Settings.loadAllSettings();
 
-            Debug.WriteLine("is Network loaded = " + Settings.IsNetworkSavedToDatabase.ToString());
+
+
+            this.UserLocationMarker = (UserLocationMarker)this.FindName("UserLocationMarker");
+
+            GetContinuousLocationUsingWP8Api();
            
             // Sample code to localize the ApplicationBarupda
             //BuildLocalizedApplicationBar();
@@ -55,7 +65,7 @@ namespace BikeWay03
             {
                 App.MainPage = this;
                 App.MainViewModel.LoadDataFromAPI();
-                UpdatePushpinsOnTheMap(App.MainViewModel.StationList);
+                UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
                 //App.MainPage.UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
             }
         }
@@ -76,7 +86,139 @@ namespace BikeWay03
             ApplicationBar.MenuItems.Add(appBarMenuItem);
         }
 
-        public void UpdatePushpinsOnTheMap(ObservableCollection<StationModel> stationList) 
+        
+
+       
+
+
+        #region WP8 Location API
+
+        private async void GetSingleLocationUsingWP8Api()
+        {
+            // new instance
+            geolocatorWP8 = new Geolocator();
+
+            // GPS or Cellular
+            geolocatorWP8.DesiredAccuracy = PositionAccuracy.High;
+            // attach status changed handler 
+            // it must be attached, otherwise you'll get an exception
+            geolocatorWP8.StatusChanged += geolocatorWP8_StatusChanged;
+
+            // time of use of cached location
+            TimeSpan maxAge = TimeSpan.FromMinutes(5);
+            // timeout of aquiring location
+            TimeSpan timeout = TimeSpan.FromSeconds(30);
+
+            var ourLocation = await geolocatorWP8.GetGeopositionAsync(maxAge, timeout);
+
+            /* 
+             * When you launched an app and trying to get single location, in 99% you will never get a result. 
+             * It happens due to bug or something in the API
+             * Have a look on the workaround methods:
+             *  - GeolocatorWarming1 ( I use this one in my apps )
+             *  - GeolocatorWarming2
+             */
+        }
+
+        private void GetContinuousLocationUsingWP8Api()
+        {
+            // new instance
+            geolocatorWP8 = new Geolocator();
+
+            // GPS or Cellular
+            geolocatorWP8.DesiredAccuracy = PositionAccuracy.Default;
+
+            /* ONLY ONE OF THESE TWO INTERVAL PROPERTIES MUST BE SET */
+
+            // set interval in meters when raise the PositionChanged event
+            //geolocatorWP8.MovementThreshold = 200; // 15 METERS
+            // or set this interval in milliseconds 
+            geolocatorWP8.ReportInterval = 120000; // 2 minute
+
+            // attach status changed handler 
+            // it must be attached, otherwise you'll get an exception
+            geolocatorWP8.StatusChanged += geolocatorWP8_StatusChanged;
+
+            // start continuous tracking attached an eventhandler
+            // tracking starts automatically once the handler attached
+            geolocatorWP8.PositionChanged += geolocatorWP8_PositionChanged;
+
+            // to stop tracking detach this handler
+            //geolocatorWP8.PositionChanged -= geolocatorWP8_PositionChanged;
+        }
+
+        void geolocatorWP8_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
+        {
+            // basically it's all the same as in WP7
+
+            switch (args.Status)
+            {
+                case PositionStatus.Disabled:
+                    Debug.WriteLine("position disabled");
+                    break;
+                case PositionStatus.Initializing:
+                    Debug.WriteLine("initializing geolocator");
+                    break;
+                case PositionStatus.NoData:
+                    Debug.WriteLine("oooh shit no data");
+                    break;
+                case PositionStatus.NotInitialized:
+                    Debug.WriteLine("not initialized (yet, hopefully)");
+                    break;
+                case PositionStatus.Ready:
+                    Debug.WriteLine("are you reaaaaaady? yeeees");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void geolocatorWP8_PositionChanged(Geolocator sender, PositionChangedEventArgs args)
+        {
+            /* note, this API returns Geocoordinate object which needs to be converted to GeoCoordinate object to show on the map */
+
+            var ourLocation = args.Position.Coordinate;
+            //Debug.WriteLine("my location = " + ourLocation.ToString());
+            
+
+
+            //if (!App.RunningInBackground)
+            //{
+                // do something with user location, update map or something
+
+                // use Dispatcher if you update UI as this code executes in another Thread
+                Dispatcher.BeginInvoke(() =>
+                {
+                    Debug.WriteLine("my location = " + ourLocation.ToGeoCoordinate().ToString());
+                    this.UserLocationMarker = (UserLocationMarker)this.FindName("UserLocationMarker");
+                    //this.UserLocationMarker.GeoCoordinate = ourLocation.ToGeoCoordinate();
+
+
+                    if (this.UserLocationMarker != null)
+                    {
+
+                        this.UserLocationMarker.GeoCoordinate = ourLocation.ToGeoCoordinate();
+                    }
+                    // your UI related code goes here ...
+
+                });
+            //}
+            //else
+            //{
+            //    // if app in background => do nothing, or show toast notification
+            //    ShellToast toast = new ShellToast();
+            //    toast.Content = "You are at " + ourLocation.Latitude + " " + ourLocation.Longitude;
+            //    toast.Show();
+
+            //    /* I'm not sure you can update a tile here, but you can try */
+            //}
+        }
+
+        #endregion
+
+        #region Pushpin drawing
+
+        public void UpdatePushpinsStationsOnMap(ObservableCollection<StationModel> stationList)
         {
 
             Debug.WriteLine("UpdatingPushpins");
@@ -86,67 +228,81 @@ namespace BikeWay03
              */
 
             // remove previously added layer from the map
-            if (_pushpinsLayer != null)
-                MapControl.Layers.Remove(_pushpinsLayer);
+            if (_pushpinsStationsLayer != null)
+                MapControl.Layers.Remove(_pushpinsStationsLayer);
 
+            if (_pushpinsNetworksLayer != null)
+                MapControl.Layers.Remove(_pushpinsNetworksLayer);
+
+            _pushpinsNetworksLayer = null;
             // refresh layer
-            _pushpinsLayer = new MapLayer();
+            _pushpinsStationsLayer = new MapLayer();
 
             //DrawSationPushpin(stationList[1], _pushpinsLayer);
 
             foreach (var station in stationList)
             {
-                DrawSationPushpin(station, _pushpinsLayer);
+                DrawSationPushpin(station, _pushpinsStationsLayer);
                 //Debug.WriteLine(station.ID);
             }
 
             // after we created all pins and put them on a layer, we add this layer to the map
-            MapControl.Layers.Add(_pushpinsLayer);
+            MapControl.Layers.Add(_pushpinsStationsLayer);
         }
 
-        private void path_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+
+        public void UpdatePushpinsNetworksOnMap(ObservableCollection<NetworkModel> networkList)
         {
 
-            Shape path = sender as Shape;
+            Debug.WriteLine("UpdatingPushpinsNetwork...............");
 
-    
-            //MapControl.Layers.Remove(_pushpinsLayer); 
+            // remove previously added layer from the map
+            if (_pushpinsStationsLayer != null)
+                MapControl.Layers.Remove(_pushpinsStationsLayer);
 
-            if (path != null)
+            if (_pushpinsNetworksLayer != null)
+                MapControl.Layers.Remove(_pushpinsNetworksLayer);
+
+            _pushpinsStationsLayer = null;
+
+
+            // refresh layer
+            _pushpinsNetworksLayer = new MapLayer();
+
+            //DrawSationPushpin(stationList[1], _pushpinsLayer);
+
+            foreach (NetworkModel network in networkList)
             {
-                string id = "10";
-                id = path.Tag.ToString();
-                //
-                Debug.WriteLine("id of station sent to pivot= " +id);
-                NavigationService.Navigate(new Uri("/PivotPage.xaml?" 
-                            + "stationID="+ id + "&navigatedFrom=" + PivotEnum.pushPinTap.ToString(), UriKind.Relative));
+                DrawNetworkPushpin(network, _pushpinsNetworksLayer);
             }
 
-
-        }
-        private void appbar_favorite(object sender, EventArgs e)
-        {
-            //MapControl.Layers.Remove(_pushpinsLayer);
-            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
-                            + "navigatedFrom=" + PivotEnum.AppBar_Favorites, UriKind.Relative));
-      
+            // after we created all pins and put them on a layer, we add this layer to the map
+            MapControl.Layers.Add(_pushpinsNetworksLayer);
         }
 
-        private void appbar_nearby(object sender, EventArgs e)
+        private void DrawNetworkPushpin(NetworkModel network, MapLayer _pushpinsLayer)
         {
-            //MapControl.Layers.Remove(_pushpinsLayer);
-            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
-                            + "navigatedFrom=" + PivotEnum.AppBar_Nearby, UriKind.Relative));
+            int radius = 30;
+
+            GeoCoordinate coordinate = network.GeoCoordinate;
+
+            SolidColorBrush gray = new SolidColorBrush(Colors.Gray);
+            gray.Opacity = 0.8;
+
+            Ellipse gray_circle = new Ellipse();
+            gray_circle.Width = radius * 2;
+            gray_circle.Height = radius * 2;
+            gray_circle.Fill = gray;
+
+            MapOverlay overlay_rect = new MapOverlay();
+            overlay_rect.Content = gray_circle;
+            overlay_rect.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
+            overlay_rect.PositionOrigin = new Point(0.5, 0.5);
+            _pushpinsNetworksLayer.Add(overlay_rect);
 
         }
 
-        private void appbar_routes(object sender, EventArgs e)
-        {
-            //MapControl.Layers.Remove(_pushpinsLayer);
-            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
-                            + "navigatedFrom=" + PivotEnum.AppBar_Routes, UriKind.Relative));
 
-        } 
 
         private void DrawSationPushpin(StationModel station, MapLayer _pushpinsLayer)
         {
@@ -174,9 +330,6 @@ namespace BikeWay03
             //get the angle in radians
             double angle_bikes = percentage * 2 * Math.PI;            
             double angle_racks = (2 * Math.PI) - angle_bikes;
-
-            //Debug.WriteLine(angle_bikes);
-            //Debug.WriteLine(angle_racks);
 
             GeoCoordinate coordinate = station.GeoCoordinate;
 
@@ -316,6 +469,29 @@ namespace BikeWay03
 
        }
 
+        #endregion
+
+
+
+        private async Task ShowUserLocation()
+        {
+            Geolocator geolocator;
+            Geoposition geoposition;
+
+            this.UserLocationMarker = (UserLocationMarker)this.FindName("UserLocationMarker");
+
+            geolocator = new Geolocator();
+
+            geoposition = await geolocator.GetGeopositionAsync();
+
+            this.UserLocationMarker.GeoCoordinate = geoposition.Coordinate.ToGeoCoordinate();
+            this.UserLocationMarker.Visibility = System.Windows.Visibility.Visible;
+        }
+
+
+
+        #region Event Handlers
+
         private void RefreshClick(object sender, EventArgs e)
         {
 
@@ -326,13 +502,66 @@ namespace BikeWay03
 
         }
 
+        private void path_Tap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
 
+            Shape path = sender as Shape;
+
+
+            //MapControl.Layers.Remove(_pushpinsLayer); 
+
+            if (path != null)
+            {
+                string id = "10";
+                id = path.Tag.ToString();
+                //
+                Debug.WriteLine("id of station sent to pivot= " + id);
+                NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "stationID=" + id + "&navigatedFrom=" + PivotEnum.pushPinTap.ToString(), UriKind.Relative));
+            }
+
+
+        }
+        private void appbar_favorite(object sender, EventArgs e)
+        {
+            //MapControl.Layers.Remove(_pushpinsLayer);
+            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "navigatedFrom=" + PivotEnum.AppBar_Favorites, UriKind.Relative));
+
+        }
+
+        private void appbar_nearby(object sender, EventArgs e)
+        {
+            //MapControl.Layers.Remove(_pushpinsLayer);
+            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "navigatedFrom=" + PivotEnum.AppBar_Nearby, UriKind.Relative));
+
+        }
+
+        private void appbar_routes(object sender, EventArgs e)
+        {
+            //MapControl.Layers.Remove(_pushpinsLayer);
+            NavigationService.Navigate(new Uri("/PivotPage.xaml?"
+                            + "navigatedFrom=" + PivotEnum.AppBar_Routes, UriKind.Relative));
+
+        }
 
 
         private void MapControl_ZoomLevelChanged(object sender, MapZoomLevelChangedEventArgs e)
         {
             Debug.WriteLine(this.MapControl.ZoomLevel);
+            double zoomLevel = this.MapControl.ZoomLevel;
+
+            if (zoomLevel <= 12)
+            {
+                if (_pushpinsNetworksLayer == null)
+                    Debug.WriteLine("tamanho da networklist = " + App.MainViewModel.NetworkList.Count);
+                    UpdatePushpinsNetworksOnMap(App.MainViewModel.NetworkList);
+            }
+
         }
+
+        #endregion
 
 
     }

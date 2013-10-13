@@ -21,19 +21,6 @@
 
         <maps:Map x:Name="MapControl" Center="-27.464828,153.030903" ZoomLevel="17" ZoomLevelChanged="MapControl_ZoomLevelChanged">
             <maptk:MapExtensions.Children>
-
-                <maptk:MapItemsControl Name="StoresMapItemsControl">
-                    <maptk:MapItemsControl.ItemTemplate>
-                        <DataTemplate>
-
-                            <!--<maptk:Pushpin GeoCoordinate="{Binding GeoCoordinate}"  x:Uid="{Binding ID}"  Template="{StaticResource PushPinTemplate}" Content="{Binding ID}" Tap="Pushpin_Tap_1">-->
-                                <maptk:Pushpin GeoCoordinate="{Binding GeoCoordinate}"  x:Uid="{Binding ID}" Content="{Binding ID}">
-
-                            </maptk:Pushpin>
-
-                        </DataTemplate>
-                    </maptk:MapItemsControl.ItemTemplate>
-                </maptk:MapItemsControl>
                 <maptk:UserLocationMarker x:Name="UserLocationMarker" Visibility="Visible"/>
             </maptk:MapExtensions.Children>
         </maps:Map>

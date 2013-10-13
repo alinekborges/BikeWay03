@@ -24,8 +24,9 @@
             <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.star.remove.png" Text="Favorite" Click="favoriteThisStation" />
         </shell:ApplicationBar>
 
-        <shell:ApplicationBar x:Key="secondPivotTabApplicationBar" IsVisible="True">
 
+        <shell:ApplicationBar x:Key="FavoriteAppBar" IsVisible="True">
+            <shell:ApplicationBarIconButton IconUri="Assets/Icons/appbar.pin.png" Text="Pin" />
         </shell:ApplicationBar>
 
     </phone:PhoneApplicationPage.Resources>
@@ -54,9 +55,9 @@
                     </Grid.RowDefinitions>
                     <TextBlock Text="{Binding Path=Station.Name}" Grid.Row="0" Grid.ColumnSpan="4" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                     <Image Source="Assets\bike_green.png" Stretch="None" Grid.Column="0" Grid.Row="2"></Image>
-                    <TextBlock Text="{Binding Path=Station.bikes}" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Center"  FontSize="{StaticResource PhoneFontSizeExtraExtraLarge}" Foreground="#FF039711" />
+                    <TextBlock Text="{Binding Path=Station.BikesString}" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Center"  FontSize="{StaticResource PhoneFontSizeExtraExtraLarge}" Foreground="#FF039711" />
                     <Image Source="Assets\rack_red.png" Stretch="None" Grid.Column="2" Grid.Row="2"></Image>
-                    <TextBlock Text="{Binding Path=Station.free}" Grid.Column="3" Grid.Row="2" HorizontalAlignment="Center"  FontSize="{StaticResource PhoneFontSizeExtraExtraLarge}" Foreground="#FFEE2323" />
+                    <TextBlock Text="{Binding Path=Station.FreeString}" Grid.Column="3" Grid.Row="2" HorizontalAlignment="Center"  FontSize="{StaticResource PhoneFontSizeExtraExtraLarge}" Foreground="#FFEE2323" />
 
                     <TextBlock Text="Last Update: 31/07/2002 10:45 PM" Grid.Row="4" Grid.ColumnSpan="4" Padding="30"/>
 
@@ -117,9 +118,9 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Path=nearbyList[1].name}" Grid.ColumnSpan="4" Grid.Row="0" Padding="15"/>
                         <Image Source="Assets\bike_green.png"  Stretch="None" Grid.Column="0" Grid.Row="1" />
-                        <TextBlock Text="{Binding Path=nearbyList[0].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[1].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Image Source="Assets\rack_red.png"  Stretch="None" Grid.Column="2" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[1].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Stretch="UniformToFill"  Height="10" VerticalAlignment="Bottom" Fill="Red" HorizontalAlignment="Right"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Width="100" Height="10"  VerticalAlignment="Bottom" Fill="Green" HorizontalAlignment="Left"/>
                     </Grid>
@@ -177,9 +178,9 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Path=nearbyList[4].name}" Grid.ColumnSpan="4" Grid.Row="0" Padding="15"/>
                         <Image Source="Assets\bike_green.png"  Stretch="None" Grid.Column="0" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[4].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Image Source="Assets\rack_red.png"  Stretch="None" Grid.Column="2" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[4].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Stretch="UniformToFill"  Height="10" VerticalAlignment="Bottom" Fill="Red" HorizontalAlignment="Right"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Width="100" Height="10"  VerticalAlignment="Bottom" Fill="Green" HorizontalAlignment="Left"/>
                     </Grid>
@@ -197,9 +198,9 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Path=nearbyList[5].name}" Grid.ColumnSpan="4" Grid.Row="0" Padding="15"/>
                         <Image Source="Assets\bike_green.png"  Stretch="None" Grid.Column="0" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[5].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Image Source="Assets\rack_red.png"  Stretch="None" Grid.Column="2" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[5].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Stretch="UniformToFill"  Height="10" VerticalAlignment="Bottom" Fill="Red" HorizontalAlignment="Right"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Width="100" Height="10"  VerticalAlignment="Bottom" Fill="Green" HorizontalAlignment="Left"/>
                     </Grid>
@@ -217,9 +218,9 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Path=nearbyList[6].name}" Grid.ColumnSpan="4" Grid.Row="0" Padding="15"/>
                         <Image Source="Assets\bike_green.png"  Stretch="None" Grid.Column="0" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[6].BikesString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Green" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Image Source="Assets\rack_red.png"  Stretch="None" Grid.Column="2" Grid.Row="1"/>
-                        <TextBlock Text="{Binding Path=nearbyList[0].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
+                        <TextBlock Text="{Binding Path=nearbyList[6].FreeString}" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" Foreground="Red" FontSize="{StaticResource PhoneFontSizeLarge}"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Stretch="UniformToFill"  Height="10" VerticalAlignment="Bottom" Fill="Red" HorizontalAlignment="Right"/>
                         <Rectangle Grid.Row="3" Grid.ColumnSpan="4" Width="100" Height="10"  VerticalAlignment="Bottom" Fill="Green" HorizontalAlignment="Left"/>
                     </Grid>
@@ -235,7 +236,7 @@
                 <phone:LongListSelector Margin="30,30,10,10" ItemsSource="{Binding favoriteList}">
                     <phone:LongListSelector.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="12,2,0,4" Height="105" Width="432">
+                            <StackPanel x:Name="StationStackPanel" Orientation="Horizontal" Margin="12,2,0,4" Height="105" Width="432" Tag="{Binding }">
                                 <!--Replace rectangle with image-->
                                 <StackPanel Width="311" Margin="8,-7,0,0">
                                     <TextBlock Text="{Binding name}"  TextWrapping="Wrap" Margin="10,0" FontSize="{StaticResource PhoneFontSizeMedium}" />
@@ -246,7 +247,7 @@
                                         <TextBlock Text="{Binding FreeString}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Foreground="Red" Padding="10"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <Image Source="Assets\Icons\appbar.pin.png" Stretch="None" />
+                                <Image Source="Assets\Icons\appbar.pin.png" Stretch="None" Tag="{Binding ID}" Tap="btnIconicTile_Click" />
                             </StackPanel>
                         </DataTemplate>
                     </phone:LongListSelector.ItemTemplate>

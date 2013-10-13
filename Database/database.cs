@@ -4,6 +4,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Device.Location;
 using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
@@ -69,7 +70,7 @@ namespace BikeWay03.DB
             {
                 //UpdateCustomersList();
                 Debug.WriteLine("adding stations : database changed succesfully - lines changed: " + inserted.ToString());
-                Settings.IsStationSavedToDatabase = true;
+                //Settings.IsStationSavedToDatabase = true;
             }
         }
         public static async void SaveNetworks(ObservableCollection<NetworkModel> networkList)
@@ -85,7 +86,7 @@ namespace BikeWay03.DB
             }
 
             //StationBase station = stationList[0].getStationBase();
-
+            
             int inserted = await sqliteConnection.InsertAllAsync(networkBaseList);
 
             // If insertion successfull we update our view
@@ -93,7 +94,7 @@ namespace BikeWay03.DB
             {
                 //UpdateCustomersList();
                 Debug.WriteLine("adding networks : database changed succesfully - lines changed: " + inserted.ToString());
-                Settings.IsNetworkSavedToDatabase = true;
+                //Settings.IsNetworkSavedToDatabase = true;
             }
         }
 
@@ -114,6 +115,112 @@ namespace BikeWay03.DB
                 StationModel station = StationModel.getStationModel(stationBase);
                 App.PivotPageViewModel.favoriteList.Add(station);
             }
+        }
+
+        public static async void getAllStations()
+        {
+            string query = "SELECT * FROM station";
+            var results = await sqliteConnection.QueryAsync<StationBase>(query);
+            Debug.WriteLine(query);
+
+
+            Debug.WriteLine("result of stations: lenght = " + results.Count);
+
+            App.MainViewModel.StationList.Clear();
+
+            foreach (StationBase stationBase in results)
+            {
+                StationModel station = StationModel.getStationModel(stationBase);
+                App.MainViewModel.StationList.Add(station);
+            }
+        }
+
+        public static async void getAllNetworks()
+        {
+            string query = "SELECT * FROM network";
+            var results = await sqliteConnection.QueryAsync<NetworkBase>(query);
+            Debug.WriteLine(query);
+
+
+            Debug.WriteLine("result of stations: lenght = " + results.Count);
+
+            App.MainViewModel.NetworkList.Clear();
+
+            foreach (NetworkBase networkBase in results)
+            {
+                NetworkModel network = NetworkModel.getNetworkModel(networkBase);
+                App.MainViewModel.NetworkList.Add(network);
+            }
+        }
+
+
+
+        //search in database all stations within a small percentage of longitude and latitude
+        //it's and attempt to reduce the number of results so the ordering algorithm will be faster
+        public static async void getNearbyStations(GeoCoordinate coordinate)
+        {
+            int latitude = (int)(coordinate.Latitude * 1E6);
+            int longitude = (int)(coordinate.Longitude * 1E6);
+
+            double percentage = 0.0001;
+            double percentage_1 = 0.001;
+            
+            int d_latitude = (int)Math.Abs(latitude * percentage);
+            int d_longitude = (int)Math.Abs(longitude * percentage);
+
+            int latitude_low = latitude - d_latitude;
+            int latitude_high = latitude + d_latitude;
+
+            int longitude_low = longitude - d_longitude;
+            int longitude_high = longitude + d_longitude;
+
+            
+            string query_latitude = "lat BETWEEN " + latitude_low + " AND " + latitude_high;
+            string query_longitude = "lng BETWEEN " + longitude_low + " AND " + longitude_high;
+
+            string query = "SELECT * FROM station WHERE ( " + query_latitude + " ) AND ( " + query_longitude + " )";
+
+            Debug.WriteLine(query);
+
+
+            var results = await sqliteConnection.QueryAsync<StationBase>(query);
+            Debug.WriteLine("result of nearby teste: lenght = " + results.Count);
+
+            var nearbyList = OrderNearbyStations(coordinate, results);
+
+            //App.PivotPageViewModel.nearbyList.Clear();
+
+            int count = 7;
+            if (nearbyList.Count <= 7)
+            {
+                count = nearbyList.Count;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                App.PivotPageViewModel.nearbyList[i] =  nearbyList[i];
+                Debug.WriteLine("added nearby " + i);
+            }
+
+
+
+        }
+
+        public static List<StationModel> OrderNearbyStations(GeoCoordinate coordinate, List<StationBase> stationList)
+        {
+            List<StationModel> tempList = new List<StationModel>();
+
+            foreach (StationBase station in stationList)
+            {
+                StationModel stationModel = StationModel.getStationModel(station);
+                double distance = coordinate.GetDistanceTo(stationModel.GeoCoordinate);
+                stationModel.distance = distance;
+                tempList.Add(stationModel);
+            }
+
+            var nearbyList = tempList.OrderBy(x => x.distance).ToList();
+
+            return nearbyList;
         }
 
         public static async void UpdateFavoriteStation(StationModel station)

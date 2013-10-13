@@ -4,9 +4,7 @@
     xmlns:vm="clr-namespace:BikeWay03.ViewModels"
     xmlns:sm="clr-namespace:BikeWay03">
 
-    <vm:PivotPageViewModel.Station>
-        <vm:StationModel ID="1" bikes="15" free="14" name="01 - GEORGE ST/LALALA" />
-    </vm:PivotPageViewModel.Station>
+    
     
     <vm:PivotPageViewModel.nearbyList>
         <vm:StationModel ID="1" bikes="10" free="14" BikesString="10" FreeString="14" name="01 - GEORGE ST/LALALA"/>

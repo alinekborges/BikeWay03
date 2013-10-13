@@ -103,8 +103,10 @@ namespace BikeWay03.DataServices
                     {
                         App.MainViewModel.StationList.Add(station);                       
                     }
-                    Database.SaveStations(App.MainViewModel.StationList);
-                    App.MainPage.UpdatePushpinsOnTheMap(App.MainViewModel.StationList);
+
+
+                    //Database.SaveStations(App.MainViewModel.StationList);
+                    App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
                 }
 
             }
@@ -130,10 +132,14 @@ namespace BikeWay03.DataServices
                     foreach (NetworkModel network in networkList)
                     {
                         App.MainViewModel.NetworkList.Add(network);
-                        //App.StationListViewModel.StationList.Add(station);
+                       
                     }
 
-                    Database.SaveNetworks(App.MainViewModel.NetworkList);
+                    if (Settings.IsNetworkSavedToDatabase == false)
+                    {
+                        Database.SaveNetworks(App.MainViewModel.NetworkList);
+                    }
+
                     Debug.WriteLine("network size = " + networkList.Count);
                 }
 

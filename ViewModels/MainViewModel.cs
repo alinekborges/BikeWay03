@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BikeWay03.ViewModels;
 using BikeWay03.Util;
+using BikeWay03.DB;
 
 namespace BikeWay03.ViewModels
 {
@@ -42,6 +43,10 @@ namespace BikeWay03.ViewModels
             if (Settings.IsNetworkSavedToDatabase == false)
             {
                 DataService.GetNetworkList();
+            }
+            else
+            {
+                Database.getAllNetworks();
             }
 
         }

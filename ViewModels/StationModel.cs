@@ -49,6 +49,9 @@ namespace BikeWay03.ViewModels
             }
 
         }
+
+
+        public double distance;
         //public int lat { get; set; }
         //public int lng { get; set; }
         //public int number { get; set; }
@@ -59,7 +62,6 @@ namespace BikeWay03.ViewModels
 
         private GeoCoordinate _geoCoordinate;
 
-        [TypeConverter(typeof(GeoCoordinateConverter))]
         public GeoCoordinate GeoCoordinate
         {
             get

@@ -184,6 +184,17 @@
     <Content Include="Assets\Tiles\IconicTileSmall.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Tiles\Medium\0_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\100_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\10_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\20_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\30_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\40_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\50_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\60_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\70_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\80_202x202.png" />
+    <Content Include="Assets\Tiles\Medium\90_202x202.png" />
     <Content Include="README_FIRST.txt" />
     <Content Include="Toolkit.Content\ApplicationBar.Add.png" />
     <Content Include="Toolkit.Content\ApplicationBar.Cancel.png" />

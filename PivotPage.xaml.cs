@@ -11,6 +11,8 @@ using BikeWay03.ViewModels;
 using System.Diagnostics;
 using BikeWay03.Util;
 using BikeWay03.DB;
+using System.Device.Location;
+using System.Collections.ObjectModel;
 
 namespace BikeWay03
 {
@@ -31,6 +33,7 @@ namespace BikeWay03
             this.DataContext = App.PivotPageViewModel;
             Database.getFavorites();
 
+
             try
             {
                 //Database.SaveStations(App.StationListViewModel.StationList);
@@ -41,6 +44,9 @@ namespace BikeWay03
             }
             
         }
+
+        #region Managing pivots
+
         private void PivotPage_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -65,6 +71,9 @@ namespace BikeWay03
                 case 1:
                     pivotResource = "";
                     break;
+                case 2:
+                    pivotResource = "FavoriteAppBar";
+                    break;
                 default:
                     break;
 
@@ -72,6 +81,7 @@ namespace BikeWay03
             ApplicationBar = (ApplicationBar)Resources[pivotResource];
 
         }
+
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -93,7 +103,16 @@ namespace BikeWay03
                             int id_ = Convert.ToInt32(id) - 1;
 
                             App.PivotPageViewModel.Station = App.MainViewModel.StationList[id_];
+                            
+
+                            Debug.WriteLine("bikes: " + App.PivotPageViewModel.Station.bikes);
+                            Debug.WriteLine("free: " + App.PivotPageViewModel.Station.free);
+
+                            var nearbyList = OrderNearbyStations(App.PivotPageViewModel.Station.GeoCoordinate, App.MainViewModel.StationList);
+                            App.PivotPageViewModel.nearbyList = nearbyList;
+
                             DataContext = App.PivotPageViewModel;
+                            //Database.getNearbyStations(App.PivotPageViewModel.Station.GeoCoordinate);
                             //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[id_]);
                             //DataContext = viewModel;
                             //this.viewModel.Station = App.StationListViewModel.StationList[id_];
@@ -132,6 +151,99 @@ namespace BikeWay03
             updateBars();
         }
 
+        #endregion
+
+        public static ObservableCollection<StationModel> OrderNearbyStations(GeoCoordinate coordinate, ObservableCollection<StationModel> stationList)
+        {
+            //List<StationModel> tempList = new List<StationModel>();
+
+            foreach (StationModel station in stationList)
+            {
+                //StationModel stationModel = StationModel.getStationModel(station);
+                double distance = coordinate.GetDistanceTo(station.GeoCoordinate);
+                station.distance = distance;
+                //tempList.Add(stationModel);
+            }
+
+            var nearbyList = stationList.OrderBy(x => x.distance).ToList();
+
+            ObservableCollection<StationModel> list = new ObservableCollection<StationModel>();
+
+            foreach (StationModel station in nearbyList)
+            {
+                list.Add(station);
+            }
+
+            return list;
+        }
+
+        #region Live Tiles
+        private void btnIconicTile_Click(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            Image image = (sender) as Image;
+            Debug.WriteLine(image.Tag);
+
+            IconicTileData oIcontile = new IconicTileData();
+            
+
+            StationModel station = null;
+            int id = Convert.ToInt32(image.Tag.ToString());
+
+            foreach (StationModel s in App.MainViewModel.StationList)
+            {
+                if (id == s.ID)
+                {
+                    station = s;
+                    break;
+                }
+            }
+
+            if (station == null)
+                return;
+
+            oIcontile.Title = station.Name;
+            Uri uri = getIconImageUri(station);
+
+            oIcontile.IconImage = uri;
+            oIcontile.SmallIconImage = new Uri("Assets/Tiles/Medium/10_202x202.png", UriKind.Relative);
+
+            
+            string tileID = "BikeWay_" + station.ID.ToString();
+
+            // find the tile object for the application tile that using "Iconic" contains string in it.
+            ShellTile TileToFind = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains(tileID));
+
+            if (TileToFind != null && TileToFind.NavigationUri.ToString().Contains(tileID))
+            {
+                TileToFind.Delete();
+                ShellTile.Create(new Uri("/MainPage.xaml?id="+tileID, UriKind.Relative), oIcontile, true);
+            }
+            else
+            {
+                ShellTile.Create(new Uri("/MainPage.xaml?id="+tileID, UriKind.Relative), oIcontile, true);
+            }
+
+        }
+
+        private Uri getIconImageUri(StationModel station)
+        {
+            double p = Math.Round(station.percentage, 1);
+            string percentage = (p * 100).ToString();
+
+            string size = "_202x202";
+            string type = ".png";
+
+            string path = "Assets/Tiles/Medium/";
+
+            string full_path = path + percentage + size + type;
+            Debug.WriteLine(full_path);
+
+            return new Uri(full_path, UriKind.Relative);
+        }
+        #endregion
+
+
+        #region menu Performances
         private void favoriteThisStation(object sender, EventArgs e)
         {
             StationModel station = App.PivotPageViewModel.Station;
@@ -155,6 +267,9 @@ namespace BikeWay03
         }
 
 
+        #endregion
+
+
 
         public void updateBars()
         {
@@ -164,6 +279,11 @@ namespace BikeWay03
             Debug.WriteLine(width.ToString());
             //this.green_1.Width = width * this.viewModel.nearbyList[0].percentage;
 
+
+        }
+
+        private void Image_Tap_1(object sender, System.Windows.Input.GestureEventArgs e)
+        {
 
         }
     }
