@@ -13,6 +13,7 @@ using BikeWay03.Util;
 using BikeWay03.DB;
 using System.Device.Location;
 using System.Collections.ObjectModel;
+using Microsoft.Phone.Scheduler;
 
 namespace BikeWay03
 {
@@ -125,7 +126,7 @@ namespace BikeWay03
 
                     //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
                     //DataContext = viewModel;
-                    this.Pivot.SelectedIndex = 1;
+                    this.Pivot.SelectedIndex = 0;
                     Pivot.Items.RemoveAt(0);
                 }
 
@@ -134,7 +135,7 @@ namespace BikeWay03
                    
                     //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
                     //DataContext = viewModel;
-                    this.Pivot.SelectedIndex = 2;
+                    this.Pivot.SelectedIndex = 1;
                     Pivot.Items.RemoveAt(0);
                 }
 
@@ -143,7 +144,7 @@ namespace BikeWay03
 
                     //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
                     //DataContext = viewModel;
-                    this.Pivot.SelectedIndex = 3;
+                    this.Pivot.SelectedIndex = 2;
                     Pivot.Items.RemoveAt(0);
                 }
             }
@@ -206,9 +207,10 @@ namespace BikeWay03
 
             oIcontile.IconImage = uri;
             oIcontile.SmallIconImage = new Uri("Assets/Tiles/Medium/10_202x202.png", UriKind.Relative);
-
-            
-            string tileID = "BikeWay_" + station.ID.ToString();
+                       
+           
+            string tileID = station.ID.ToString();
+            string tileName = "BikeWayTile";
 
             // find the tile object for the application tile that using "Iconic" contains string in it.
             ShellTile TileToFind = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains(tileID));
@@ -216,13 +218,13 @@ namespace BikeWay03
             if (TileToFind != null && TileToFind.NavigationUri.ToString().Contains(tileID))
             {
                 TileToFind.Delete();
-                ShellTile.Create(new Uri("/MainPage.xaml?id="+tileID, UriKind.Relative), oIcontile, true);
+                ShellTile.Create(new Uri("/MainPage.xaml?id="+tileID+"&tileName="+tileName, UriKind.Relative), oIcontile, true);
             }
             else
             {
-                ShellTile.Create(new Uri("/MainPage.xaml?id="+tileID, UriKind.Relative), oIcontile, true);
+                ShellTile.Create(new Uri("/MainPage.xaml?id="+tileID+"&tileName="+tileName, UriKind.Relative), oIcontile, true);
             }
-
+            SetUpLiveTileAgent();
         }
 
         private Uri getIconImageUri(StationModel station)
@@ -240,6 +242,36 @@ namespace BikeWay03
 
             return new Uri(full_path, UriKind.Relative);
         }
+
+        void SetUpLiveTileAgent()
+        {
+
+            Debug.WriteLine("setting up live tile agent");
+            //start background agent 
+            PeriodicTask periodicTask = new PeriodicTask("TileUpdate");
+            periodicTask.Description = "Updates the live tiles.";
+            periodicTask.ExpirationTime = System.DateTime.Now.AddDays(5);//TODO: don't expire, but download new data in the background
+
+            // If the agent is already registered with the system,
+            if (ScheduledActionService.Find(periodicTask.Name) != null)
+                ScheduledActionService.Remove(periodicTask.Name);
+            //not supported in current version
+            //periodicTask.BeginTime = DateTime.Now.AddSeconds(10);
+            //only can be called when application is running in foreground
+            try
+            {
+                ScheduledActionService.Add(periodicTask);
+            }
+            catch { }
+            if (Debugger.IsAttached)
+                try
+                {
+                    ScheduledActionService.LaunchForTest(periodicTask.Name, TimeSpan.FromSeconds(12));//launch it after 12 seconds - unless you want to wait 30minutes ;)
+                    Debug.WriteLine("Background Agent launched..");
+                }
+                catch { }
+        }
+
         #endregion
 
 
@@ -286,5 +318,8 @@ namespace BikeWay03
         {
 
         }
+
+
+
     }
 }

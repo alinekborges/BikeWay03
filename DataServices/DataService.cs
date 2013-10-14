@@ -18,6 +18,9 @@ namespace BikeWay03.DataServices
     {
         public static string filename = "stations.txt";
         public static string result;
+        public static bool error;
+
+        public static List<StationModel> stationListInBackground;
 
         public static string networkUrl = "http://api.citybik.es/networks.json";
 
@@ -33,6 +36,33 @@ namespace BikeWay03.DataServices
                 WebClient client = new WebClient();
                 client.DownloadStringCompleted += client_DownloadStringCompleted;
                 client.DownloadStringAsync(new Uri(urlToCall));
+            }
+        }
+
+        public static void getStationListInBackground(string urlToCall)
+        {
+            WebClient client = new WebClient();
+            error = false;
+            client.DownloadStringCompleted += client_DownloadStringCompletedInBackground;
+            client.DownloadStringAsync(new Uri(urlToCall));
+        }
+
+        private static void client_DownloadStringCompletedInBackground(object sender, DownloadStringCompletedEventArgs e)
+        {
+            if (e.Error == null)
+            {
+                result = e.Result;
+                Debug.WriteLine("reading from API...");
+                Debug.WriteLine(result);
+                //saveText(filename, result);
+                stationListInBackground = JsonConvert.DeserializeObject<List<StationModel>>(result);
+
+            }
+            else
+            {
+                Debug.WriteLine("ERROR downloading api");
+                error = true;
+                //do nothing. maybe show a sign? maybe
             }
         }
 
@@ -104,8 +134,11 @@ namespace BikeWay03.DataServices
                         App.MainViewModel.StationList.Add(station);                       
                     }
 
-
-                    //Database.SaveStations(App.MainViewModel.StationList);
+                    if (Settings.IsStationSavedToDatabase == false)
+                    {
+                        Database.SaveStations(App.MainViewModel.StationList);
+                    }
+                    
                     App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
                 }
 

@@ -70,7 +70,7 @@ namespace BikeWay03.DB
             {
                 //UpdateCustomersList();
                 Debug.WriteLine("adding stations : database changed succesfully - lines changed: " + inserted.ToString());
-                //Settings.IsStationSavedToDatabase = true;
+                Settings.IsStationSavedToDatabase = true;
             }
         }
         public static async void SaveNetworks(ObservableCollection<NetworkModel> networkList)
@@ -94,7 +94,7 @@ namespace BikeWay03.DB
             {
                 //UpdateCustomersList();
                 Debug.WriteLine("adding networks : database changed succesfully - lines changed: " + inserted.ToString());
-                //Settings.IsNetworkSavedToDatabase = true;
+                Settings.IsNetworkSavedToDatabase = true;
             }
         }
 
@@ -230,6 +230,7 @@ namespace BikeWay03.DB
             StationBase stationBase = station.getStationBase();
 
             int lines_changed = await sqliteConnection.UpdateAsync(stationBase);
+
 
             //int lines_changed = await sqliteConnection.QueryAsync<StationBase>(query);
             Debug.WriteLine("isFavorite = " + station.IsFavorite.ToString());

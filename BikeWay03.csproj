@@ -159,6 +159,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\AlignmentGrid.png" />
+    <Content Include="Assets\AppBikeIcon.png" />
+    <Content Include="Assets\AppBikeIcon2.png" />
+    <Content Include="Assets\AppBikeMedium.png" />
     <Content Include="Assets\Icons\appbar.pin.png" />
     <Content Include="Assets\Icons\appbar.refresh.png" />
     <Content Include="Assets\ApplicationIcon.png">
@@ -168,7 +171,9 @@
     <Content Include="Assets\Icons\appbar.star.png" />
     <Content Include="Assets\Icons\appbar.star.remove.png" />
     <Content Include="Assets\Icons\appbar.timer.png" />
+    <Content Include="Assets\icon_1_medium.png" />
     <Content Include="Assets\rack_red.png" />
+    <Content Include="Assets\test_3.png" />
     <Content Include="Assets\Tiles\FlipCycleTileLarge.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -195,6 +200,7 @@
     <Content Include="Assets\Tiles\Medium\70_202x202.png" />
     <Content Include="Assets\Tiles\Medium\80_202x202.png" />
     <Content Include="Assets\Tiles\Medium\90_202x202.png" />
+    <Content Include="Assets\Untitled-3.png" />
     <Content Include="README_FIRST.txt" />
     <Content Include="Toolkit.Content\ApplicationBar.Add.png" />
     <Content Include="Toolkit.Content\ApplicationBar.Cancel.png" />
@@ -222,6 +228,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\LiveTileService\LiveTileService.csproj">
+      <Project>{A41C4053-7CFE-4B69-A23F-6EC4FB7F4448}</Project>
+      <Name>LiveTileService</Name>
+    </ProjectReference>
     <ProjectReference Include="sqlite-net-wp8-master\Sqlite.vcxproj">
       <Project>{59B35F6C-E062-4F0E-88D8-13F3F82A24F3}</Project>
       <Name>Sqlite</Name>
