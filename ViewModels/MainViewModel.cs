@@ -18,7 +18,10 @@ namespace BikeWay03.ViewModels
     {
         public ObservableCollection<StationModel> StationList { get; set; }
         public ObservableCollection<NetworkModel> NetworkList { get; set; }
+        private NetworkModel network { get; set; }
         public bool IsDataLoaded;
+        public bool isNetworkLoaded;
+        public bool isStationsLoaded;
         
 
         public MainViewModel()
@@ -30,24 +33,66 @@ namespace BikeWay03.ViewModels
             
         }
 
-       
-
-        public void LoadDataFromAPI()
+        public NetworkModel Network
         {
-            if (this.IsDataLoaded == false)
+            get
             {
-                DataService.GetStationList("http://api.citybik.es/citycycle.json");
-                this.IsDataLoaded = true;
+                return network;
             }
+            set
+            {
+                if (this.network != value)
+                {
+                    
+                    Debug.WriteLine("changing network to " + value.name);
+                    MainPage.Status = "Downloading stations for " + value.name;
+                    DataService.GetStationList(value);
 
-            if (Settings.IsNetworkSavedToDatabase == false)
+                }
+            }
+        }
+
+        public void LoadNetworks()
+        {
+            if (this.isNetworkLoaded == true)
+                return;
+            
+            if (Settings.FirstTimeLaunch == true || Settings.IsNetworkSavedToDatabase == false)
             {
                 DataService.GetNetworkList();
+                this.isNetworkLoaded = true;
+                return;
+                
             }
-            else
+
+            if (Settings.IsNetworkSavedToDatabase == true)
             {
                 Database.getAllNetworks();
             }
+
+            
+
+
+
+        }
+
+        public void LoadData()
+        {
+            if (this.isNetworkLoaded == true)
+                return;
+
+            if (Settings.FirstTimeLaunch == true || Settings.IsNetworkSavedToDatabase == false)
+            {
+                DataService.GetNetworkList();
+                this.isNetworkLoaded = true;
+                return;
+            }            
+
+            if (Settings.IsNetworkSavedToDatabase == true)
+            {
+                Database.getAllNetworksAndStations();
+            }
+
 
         }
 

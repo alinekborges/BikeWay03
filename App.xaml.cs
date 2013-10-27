@@ -11,6 +11,8 @@ using BikeWay03.ViewModels;
 using System.IO;
 using Windows.Storage;
 using BikeWay03.DB;
+using BikeWay03.Util;
+using System.Device.Location;
 
 namespace BikeWay03
 {
@@ -99,17 +101,23 @@ namespace BikeWay03
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
+            Settings.loadAllSettings();
+            
         }
 
         // Code to execute when the application is activated (brought to foreground)
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
-
-            if (!App.MainViewModel.IsDataLoaded)
+            Settings.loadAllSettings();
+            if (!App.MainViewModel.isNetworkLoaded)
             {
-                App.MainViewModel.LoadDataFromAPI();
+                App.MainViewModel.LoadData();
                 Debug.WriteLine("AplicationActivated");
+            }
+            if (!e.IsApplicationInstancePreserved)
+            {
+                //load data
             }
 
             
@@ -119,6 +127,10 @@ namespace BikeWay03
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
+            if (Settings.UserLocation == true && MainPage.myLocation != null)
+            {
+                Settings.LastUserLocation = MainPage.myLocation;
+            }
             // Ensure that required application state is persisted here.
         }
 
@@ -126,6 +138,11 @@ namespace BikeWay03
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
+            GeoCoordinate myCurrentLocation = MainPage.myLocation;
+            if (myCurrentLocation != null && Settings.UserLocation == true)
+            {
+                Settings.LastUserLocation = myCurrentLocation;
+            }
         }
 
         // Code to execute if a navigation fails

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Device.Location;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -48,6 +49,57 @@ namespace BikeWay03.ViewModels
                 }
             }
 
+        }
+
+
+        private double perc;
+        public double percentage
+        {
+            get
+            {
+                double total = this.bikes + this.free;
+                double bike = this.bikes;
+                this.perc = bikes / total;
+                return this.perc;
+            }
+            set
+            {
+                this.perc = value;
+            }
+        }
+
+        public int RoundedPercentage
+        {
+            get
+            {
+                double percentage = this.percentage;
+                double p = Math.Round(perc, 1) * 100;
+
+                double perc_100 = percentage * 100;
+                double resto = perc_100 % 10.0;
+
+                if (resto <= 2.5)
+                {
+                    return (int)p;
+                }
+                if (resto > 2.5 && resto <= 5)
+                {
+                    return (int)(p + 5);
+                }
+                if (resto > 5 && resto <= 7.5)
+                {
+                    return (int)(p - 5);
+                }
+                else
+                {
+                    return (int)(p);
+                }
+
+            }
+            set
+            {
+                RoundedPercentage = value;
+            }
         }
 
 

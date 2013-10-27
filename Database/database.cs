@@ -1,5 +1,7 @@
-﻿using BikeWay03.Util;
+﻿using BikeWay03.DataServices;
+using BikeWay03.Util;
 using BikeWay03.ViewModels;
+using Microsoft.Phone.Maps.Controls;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -133,6 +135,7 @@ namespace BikeWay03.DB
                 StationModel station = StationModel.getStationModel(stationBase);
                 App.MainViewModel.StationList.Add(station);
             }
+            App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
         }
 
         public static async void getAllNetworks()
@@ -142,7 +145,7 @@ namespace BikeWay03.DB
             Debug.WriteLine(query);
 
 
-            Debug.WriteLine("result of stations: lenght = " + results.Count);
+            Debug.WriteLine("result of networks: lenght = " + results.Count);
 
             App.MainViewModel.NetworkList.Clear();
 
@@ -151,9 +154,44 @@ namespace BikeWay03.DB
                 NetworkModel network = NetworkModel.getNetworkModel(networkBase);
                 App.MainViewModel.NetworkList.Add(network);
             }
+            Settings.IsNetworkSavedToDatabase = true;
+
         }
 
+        public static async void getAllNetworksAndStations()
+        {
+            string query = "SELECT * FROM network";
+            var results = await sqliteConnection.QueryAsync<NetworkBase>(query);
+            Debug.WriteLine(query);
 
+
+            Debug.WriteLine("result of networks (get All Networks and Stations, of course): lenght = " + results.Count);
+
+            App.MainViewModel.NetworkList.Clear();
+
+            foreach (NetworkBase networkBase in results)
+            {
+                NetworkModel network = NetworkModel.getNetworkModel(networkBase);
+                App.MainViewModel.NetworkList.Add(network);
+            }
+
+            Settings.IsNetworkSavedToDatabase = true;
+            Debug.WriteLine("current network name  = " + Settings.currentNetworkName);
+
+            if (Settings.currentNetworkName != null)
+            {                
+                    if (Settings.IsStationSavedToDatabase == true)
+                    {
+                        Debug.WriteLine("Station is saved to database. Trying to load");
+                        getAllStations();
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Station is NOT saved to database. Trying to download");
+                        DataService.GetStationList(new NetworkModel { name = Settings.currentNetworkName });
+                    }            
+            }
+        }
 
         //search in database all stations within a small percentage of longitude and latitude
         //it's and attempt to reduce the number of results so the ordering algorithm will be faster
@@ -250,6 +288,107 @@ namespace BikeWay03.DB
                 }
             }
             
+        }
+
+
+        public static async void tryGetNetwork(Microsoft.Phone.Maps.Controls.LocationRectangle locationRectangle)
+        {
+            int latitude_south = (int)(locationRectangle.South * 1E6);
+            int latitude_north = (int)(locationRectangle.North * 1E6);
+
+            int longitude_west = (int)(locationRectangle.West * 1E6);
+            int longitude_east = (int)(locationRectangle.East * 1E6);
+
+            string query_latitude = "lat BETWEEN " + latitude_south + " AND " + latitude_north;
+            string query_longitude = "lng BETWEEN " + longitude_west + " AND " + longitude_east;
+
+            string query = "SELECT * FROM network WHERE ( " + query_latitude + " ) AND ( " + query_longitude + " )";
+
+            Debug.WriteLine(query);
+            
+            var results = await sqliteConnection.QueryAsync<NetworkModel>(query);
+            Debug.WriteLine("result of network teste: lenght = " + results.Count);
+            if (results.Count == 1)
+            {
+                App.MainViewModel.Network = results[0];
+            }
+
+        }
+
+        public static async void tryGetNetwork(GeoCoordinate geoCoordinate)
+        {
+            double delta_latitude = 0.0587626732885838;
+            double delta_longitude = 0.0458679534494877;
+
+            LocationRectangle locationRectangle = new LocationRectangle(geoCoordinate, delta_latitude, delta_longitude);
+
+            int latitude_south = (int)(locationRectangle.South * 1E6);
+            int latitude_north = (int)(locationRectangle.North * 1E6);
+
+            int longitude_west = (int)(locationRectangle.West * 1E6);
+            int longitude_east = (int)(locationRectangle.East * 1E6);
+
+            string query_latitude = "lat BETWEEN " + latitude_south + " AND " + latitude_north;
+            string query_longitude = "lng BETWEEN " + longitude_west + " AND " + longitude_east;
+
+            string query = "SELECT * FROM network WHERE ( " + query_latitude + " ) AND ( " + query_longitude + " )";
+
+            Debug.WriteLine(query);
+            
+            var results = await sqliteConnection.QueryAsync<NetworkModel>(query);
+            Debug.WriteLine("result of network teste: lenght = " + results.Count);
+            
+            if (results.Count == 1)
+            {
+                Debug.WriteLine("Network found::: " + results[0].name);
+                App.MainViewModel.Network = results[0];
+            }
+
+        }
+
+        public static NetworkModel tryGetNetwork(GeoCoordinate coordinate, ObservableCollection<NetworkModel> networkList)
+        {
+            if (coordinate == null)
+            {
+                Debug.WriteLine("GeoCoordinate of my Location = null");
+                return null;
+
+            }
+
+            double delta_latitude = 0.0587626732885838;
+            double delta_longitude = 0.0458679534494877;
+
+            LocationRectangle locationRectangle = new LocationRectangle(coordinate, delta_latitude, delta_longitude);
+
+            int latitude_south = (int)(locationRectangle.South * 1E6);
+            int latitude_north = (int)(locationRectangle.North * 1E6);
+
+            int longitude_west = (int)(locationRectangle.West * 1E6);
+            int longitude_east = (int)(locationRectangle.East * 1E6);
+
+            var networks = networkList.ToList().AsQueryable();
+
+            var result = 
+                from network in networks
+                where  !(network.lat < latitude_south || network.lat > latitude_north) 
+                || !(network.lng < longitude_west || network.lat > longitude_east)
+                    select network;
+
+
+            Debug.WriteLine("after trying to get a network.... result count == " + result.ToList().Count);
+            if (result.ToList().Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                var myNetwork = result.ToList()[0];
+                Settings.CurrentNetworkLatitude = myNetwork.GeoCoordinate.Latitude;
+                Settings.CurrentNetworkLongitude = myNetwork.GeoCoordinate.Longitude;
+                Settings.currentNetworkName = myNetwork.name;
+                return myNetwork;
+            }
+
         }
 
     }

@@ -123,11 +123,40 @@ namespace BikeWay03
 
                 if (String.Equals(navigatedFrom, PivotEnum.AppBar_Nearby.ToString()))
                 {
-
-                    //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
-                    //DataContext = viewModel;
                     this.Pivot.SelectedIndex = 0;
                     Pivot.Items.RemoveAt(0);
+
+                    string locationStatus;
+                    if (NavigationContext.QueryString.TryGetValue("location", out locationStatus))
+                    {
+                        if (string.Equals(locationStatus, "true"))
+                        {
+                            string latitude = "";
+                            string longitude = "";
+
+                            
+
+                            if (NavigationContext.QueryString.TryGetValue("locationLatitude", out latitude))
+                            {
+                                
+                            }
+                            if (NavigationContext.QueryString.TryGetValue("locationLongitude", out longitude))
+                            {
+
+                            }
+
+                            if (String.IsNullOrEmpty(latitude) == false && String.IsNullOrEmpty(longitude) == false)
+                            {
+
+                            }
+                            
+
+
+                        }
+                    }
+                    //this.viewModel = new PivotPageViewModel(App.StationListViewModel.StationList[50]);
+                    //DataContext = viewModel;
+                    
                 }
 
                 if (String.Equals(navigatedFrom, PivotEnum.AppBar_Favorites.ToString()))
@@ -203,10 +232,11 @@ namespace BikeWay03
                 return;
 
             oIcontile.Title = station.Name;
-            Uri uri = getIconImageUri(station);
+            Uri IconUri = getIconImageUri(station);
+            Uri SmallIconUri = getSmallIconImageUri(station);
 
-            oIcontile.IconImage = uri;
-            oIcontile.SmallIconImage = new Uri("Assets/Tiles/Medium/10_202x202.png", UriKind.Relative);
+            oIcontile.IconImage = IconUri;
+            oIcontile.SmallIconImage = SmallIconUri;
                        
            
             string tileID = station.ID.ToString();
@@ -229,18 +259,34 @@ namespace BikeWay03
 
         private Uri getIconImageUri(StationModel station)
         {
-            double p = Math.Round(station.percentage, 1);
-            string percentage = (p * 100).ToString();
+            int roundedPercentage = station.RoundedPercentage;
+
+            string percentage = roundedPercentage.ToString();
 
             string size = "_202x202";
             string type = ".png";
 
-            string path = "Assets/Tiles/Medium/";
+            string path = "LiveTilesTemplates/";
 
             string full_path = path + percentage + size + type;
-            Debug.WriteLine(full_path);
 
-            return new Uri(full_path, UriKind.Relative);
+            return new Uri(full_path, UriKind.RelativeOrAbsolute);
+        }
+
+        private Uri getSmallIconImageUri(StationModel station)
+        {
+
+            int roundedPercentage = station.RoundedPercentage;
+            string percentage = roundedPercentage.ToString();
+
+            string size = "_101x101";
+            string type = ".png";
+
+            string path = "LiveTilesTemplates/";
+
+            string full_path = path + percentage + size + type;
+
+            return new Uri(full_path, UriKind.RelativeOrAbsolute);
         }
 
         void SetUpLiveTileAgent()

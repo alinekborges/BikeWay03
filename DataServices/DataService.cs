@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BikeWay03.DB;
 using BikeWay03.Util;
+using Microsoft.Phone.Maps.Controls;
 
 namespace BikeWay03.DataServices
 {
@@ -27,6 +28,23 @@ namespace BikeWay03.DataServices
 
         public static void GetStationList(string urlToCall)
         {
+            if (App.OfflineMode == true)
+            {
+                GetStationListOffline();
+            }
+            else
+            {
+                WebClient client = new WebClient();
+                client.DownloadStringCompleted += client_DownloadStringCompleted;
+                client.DownloadStringAsync(new Uri(urlToCall));
+            }
+        }
+
+        public static void GetStationList(NetworkModel network)
+        {
+
+            string urlToCall = "http://api.citybik.es/" + network.name + ".json";
+            Debug.WriteLine(urlToCall);
             if (App.OfflineMode == true)
             {
                 GetStationListOffline();
@@ -138,14 +156,15 @@ namespace BikeWay03.DataServices
                     {
                         Database.SaveStations(App.MainViewModel.StationList);
                     }
-                    
+                    LocationRectangle locationRectangle = App.MainPage.getLocationRectangle();
                     App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
+                    //App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
                 }
 
             }
             else
             {
-                Debug.WriteLine("ERROR downloading api");
+                Debug.WriteLine("ERROR downloading api of stations ");
             }
         }
 
@@ -171,15 +190,23 @@ namespace BikeWay03.DataServices
                     if (Settings.IsNetworkSavedToDatabase == false)
                     {
                         Database.SaveNetworks(App.MainViewModel.NetworkList);
+                        
                     }
 
                     Debug.WriteLine("network size = " + networkList.Count);
+
+                    if (Settings.FirstTimeLaunch == true)
+                    {
+                        var currentNetwork = Database.tryGetNetwork(App.MainPage.myLocation, App.MainViewModel.NetworkList);
+                        App.MainViewModel.Network = currentNetwork;
+                        Settings.FirstTimeLaunch = false;
+                    }
                 }
 
             }
             else
             {
-                Debug.WriteLine("ERROR downloading api");
+                Debug.WriteLine("ERROR downloading api of Networks");
             }
         }
 

@@ -12,7 +12,7 @@
       <Capability Name="ID_CAP_PROXIMITY" />
     </Capabilities>
     <Tasks>
-      <DefaultTask Name="_default" NavigationPage="MainPage.xaml" />
+      <DefaultTask Name="_default" NavigationPage="MainPage.xaml" ActivationPolicy="Resume" />
       <ExtendedTask Name="BackgroundTask">
         <BackgroundServiceAgent Specifier="ScheduledTaskAgent" Name="TileUpdate" Source="LiveTileService" Type="LiveTileService.ScheduledAgent" />
       </ExtendedTask>

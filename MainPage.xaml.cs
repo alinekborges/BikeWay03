@@ -28,9 +28,40 @@ namespace BikeWay03
 
     public partial class MainPage : PhoneApplicationPage
     {
+
+        #region variable definitions
+
         MapLayer _pushpinsStationsLayer;
         MapLayer _pushpinsNetworksLayer;
         Geolocator geolocatorWP8;
+        public GeoCoordinate myLocation;
+        public int lastZoomLevel;
+        public GeoCoordinate mapCenter;
+        LocationRectangle locationRectangle;     
+        public static Map Map;
+        public StatusChangedEventArgs positionStatus;
+        public static TextBlock statusTextBlock;
+        private static string _status;
+
+        public static string Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                if (!string.Equals(_status,value))
+                {
+                    _status = value;
+                    statusTextBlock.Text = value;
+                }
+                
+            }
+        }
+
+        #endregion
+
 
         // Constructor
         public MainPage()
@@ -40,34 +71,114 @@ namespace BikeWay03
             App.MainPage = this;
             // Set the data context of the LongListSelector control to the sample data
             DataContext = App.MainViewModel;
+            statusTextBlock = this.StatusTextBlock;
 
             Database.initializeDatabase();
 
-            Settings.loadAllSettings();
+            this.Loaded += this.OnPageLoaded;
+            Map = this.MapControl;
 
-
-
+            //Settings.loadAllSettings();
+                        
             this.UserLocationMarker = (UserLocationMarker)this.FindName("UserLocationMarker");
 
-            GetContinuousLocationUsingWP8Api();
-           
+            if (Settings.UserLocation == true)
+            {
+                //GetContinuousLocationUsingWP8Api();
+            }
+
+            
             // Sample code to localize the ApplicationBarupda
             //BuildLocalizedApplicationBar();
         }
 
-
         // Load data for the ViewModel Items
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            //Settings.loadAllSettings();
+            App.MainPage = this;
 
+
+
+            
+
+            if (Settings.FirstTimeLaunch == true)
+            {
+                App.MainViewModel.LoadNetworks();
+                FirstTimeLaunch();
+                return;
+            }
+
+            if (App.MainViewModel.isNetworkLoaded == false)
+            {
+                App.MainViewModel.LoadData();
+            }
+
+            if (App.MainViewModel.isStationsLoaded == false)
+            {
+                
+            }
 
             if (!App.MainViewModel.IsDataLoaded)
             {
                 App.MainPage = this;
-                App.MainViewModel.LoadDataFromAPI();
+                //App.MainViewModel.LoadDataFromAPI();
+
+                
+                //UpdatePushpinsStationsOnMap(App.MainViewModel.StationList, locationRectangle);
+
+                
+
                 UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
+
+
+                
                 //App.MainPage.UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
             }
+
+        }
+
+        #region extra
+        public static LocationRectangle Bounds(Map map)
+        {
+            
+            GeoCoordinate Point1 = map.ConvertViewportPointToGeoCoordinate(new Point(0,0));
+            GeoCoordinate Point2 = map.ConvertViewportPointToGeoCoordinate(new Point(map.ActualHeight - 10, map.ActualWidth - 10));
+            Point Point3 = map.ConvertGeoCoordinateToViewportPoint(map.Center);
+            //Point point = map.Center;
+
+            if ((Point1 == null) || (Point2 == null))
+            {
+                Debug.WriteLine("WARNING - MAP conversion of Viewport to GeoCoordinate point failed - falling back to backup value.");
+                return new LocationRectangle(map.Center, 0.01, 0.01); // sane value
+            }
+
+            return new LocationRectangle(Point1, Point2);
+
+            
+        }
+
+
+        public LocationRectangle getLocationRectangle()
+        { 
+            //LocationRectangle locationRectangle = null;
+            if (MapControl.ZoomLevel < 3)
+                return null;
+
+            GeoCoordinate topLeft = Map.ConvertViewportPointToGeoCoordinate(new Point(0, 0));
+            GeoCoordinate bottomRight =
+            Map.ConvertViewportPointToGeoCoordinate(new Point(Map.ActualWidth, Map.ActualHeight));
+            
+            LocationRectangle lRectangle = LocationRectangle.CreateBoundingRectangle(new[] { topLeft, bottomRight });
+
+            return lRectangle;
+            
+            //var topLeft = MapControl.ConvertViewportPointToGeoCoordinate(new Point(5.0, 5.0));
+            //var bottonRight = MapControl.ConvertViewportPointToGeoCoordinate(new Point(MapControl.ActualWidth - 10, MapControl.ActualHeight - 10));
+
+            //locationRectangle = new LocationRectangle(topLeft, bottonRight);
+
+            //return locationRectangle;
         }
 
         // Sample code for building a localized ApplicationBar
@@ -86,10 +197,38 @@ namespace BikeWay03
             ApplicationBar.MenuItems.Add(appBarMenuItem);
         }
 
+        #endregion
+
+        #region FirstTimeLaunch
+
+        public void FirstTimeLaunch()
+        {
+            MessageBoxResult result =
+                MessageBox.Show("Can this app use your location to find the right network and show nearby stations?",
+                "Location", MessageBoxButton.OKCancel);
+
+            if (result == MessageBoxResult.OK)
+            {
+                Status = "Trying to find you location...";
+                GetContinuousLocationUsingWP8Api();
+                Settings.UserLocation = true;
+
+            }
+            else
+            {
+                Settings.UserLocation = false;
+                MessageBox.Show("Not using location. Do something here");
+            }
+
+        }
+
+        public void FlyToMyLocationFirstTime(GeoCoordinate coordinate)
+        {
+            this.MapControl.SetView(coordinate, 16);
+
+        }
         
-
-       
-
+        #endregion
 
         #region WP8 Location API
 
@@ -150,11 +289,13 @@ namespace BikeWay03
         void geolocatorWP8_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
         {
             // basically it's all the same as in WP7
+            this.positionStatus = args;
 
             switch (args.Status)
             {
                 case PositionStatus.Disabled:
                     Debug.WriteLine("position disabled");
+                    MessageBox.Show("Location", "Location Disabled. Please enable location services in you phone", MessageBoxButton.OKCancel);
                     break;
                 case PositionStatus.Initializing:
                     Debug.WriteLine("initializing geolocator");
@@ -192,12 +333,22 @@ namespace BikeWay03
                     Debug.WriteLine("my location = " + ourLocation.ToGeoCoordinate().ToString());
                     this.UserLocationMarker = (UserLocationMarker)this.FindName("UserLocationMarker");
                     //this.UserLocationMarker.GeoCoordinate = ourLocation.ToGeoCoordinate();
-
+                    
 
                     if (this.UserLocationMarker != null)
                     {
-
                         this.UserLocationMarker.GeoCoordinate = ourLocation.ToGeoCoordinate();
+                        this.UserLocationMarker.Visibility = Visibility.Visible;
+                        this.myLocation = ourLocation.ToGeoCoordinate();
+
+                        if (Settings.FirstTimeLaunch == true)
+                        {
+                            Debug.WriteLine("Fly to my locaaation");
+                            FlyToMyLocationFirstTime(ourLocation.ToGeoCoordinate());
+                            Status = "Trying to find a bike network near you...";
+                            //Database.tryGetNetwork(ourLocation.ToGeoCoordinate());
+                            
+                        }
                     }
                     // your UI related code goes here ...
 
@@ -218,9 +369,16 @@ namespace BikeWay03
 
         #region Pushpin drawing
 
+        
+
         public void UpdatePushpinsStationsOnMap(ObservableCollection<StationModel> stationList)
         {
+            if (stationList.Count == 0)
+            {
+                return;
+            }
 
+            Status = "Drawing stations on the map...";
             Debug.WriteLine("UpdatingPushpins");
             /* 
              * we need to have a local MapLayer variable in this class to add and remove it from the map
@@ -248,8 +406,68 @@ namespace BikeWay03
 
             // after we created all pins and put them on a layer, we add this layer to the map
             MapControl.Layers.Add(_pushpinsStationsLayer);
+
+            Status = "Last Update Time: " + new TimeSpan().ToString();
+            progressBar.IsEnabled = false;
+            progressBar.Visibility = System.Windows.Visibility.Collapsed;
         }
 
+        /*
+        public void UpdatePushpinsStationsOnMap(ObservableCollection<StationModel> stationList, LocationRectangle locationRectangle)
+        {
+            double deltaLatitude = locationRectangle.North - locationRectangle.South;
+            double deltaLongitude = locationRectangle.East - locationRectangle.West;
+
+            double south_delta = locationRectangle.South + deltaLatitude;
+
+           
+
+            Debug.WriteLine("Location Rectangle latitude south = " + locationRectangle.South);
+            var reducedList = stationList.ToList().FindAll(x => 
+                (x.GeoCoordinate.Latitude > (locationRectangle.South - deltaLatitude/2)) &&
+                (x.GeoCoordinate.Latitude < (locationRectangle.North + deltaLatitude/2)) &&
+                (x.GeoCoordinate.Longitude < (locationRectangle.East + deltaLongitude/2)) &&
+                (x.GeoCoordinate.Longitude > (locationRectangle.West - deltaLongitude/2))
+                ).ToList();
+            
+            Debug.WriteLine("temp1 count = " + reducedList.Count);
+
+            _pushpinsStationsLayer = new MapLayer();
+
+            foreach (var station in reducedList)
+            {
+                DrawSationPushpin(station, _pushpinsStationsLayer);
+            }
+            /* 
+             * we need to have a local MapLayer variable in this class to add and remove it from the map
+             * otherwise you'll have a lot of layers. Here it's a "_pushpinsLayer"
+             */
+
+            // remove previously added layer from the map
+            /*
+            if (_pushpinsStationsLayer != null)
+                MapControl.Layers.Remove(_pushpinsStationsLayer);
+
+            if (_pushpinsNetworksLayer != null)
+                MapControl.Layers.Remove(_pushpinsNetworksLayer);
+
+            _pushpinsNetworksLayer = null;
+            // refresh layer
+            _pushpinsStationsLayer = new MapLayer();
+
+            //DrawSationPushpin(stationList[1], _pushpinsLayer);
+
+            foreach (var station in stationList)
+            {
+                DrawSationPushpin(station, _pushpinsStationsLayer);
+                //Debug.WriteLine(station.ID);
+            }
+
+            // after we created all pins and put them on a layer, we add this layer to the map
+            MapControl.Layers.Add(_pushpinsStationsLayer);
+             
+        }
+    */
 
         public void UpdatePushpinsNetworksOnMap(ObservableCollection<NetworkModel> networkList)
         {
@@ -286,6 +504,10 @@ namespace BikeWay03
 
             GeoCoordinate coordinate = network.GeoCoordinate;
 
+            Pushpin pushpin = new Pushpin();
+            //Pushpin.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
+            //_pushpinsNetworksLayer.Add(pushpin);
+
             SolidColorBrush gray = new SolidColorBrush(Colors.Gray);
             gray.Opacity = 0.8;
 
@@ -303,23 +525,15 @@ namespace BikeWay03
         }
 
 
-
         private void DrawSationPushpin(StationModel station, MapLayer _pushpinsLayer)
         {
-
             
             int radius = 25;
             double small_radius = radius * 0.85;
             double total = station.bikes + station.free;
             double bikes = station.bikes;
-            double percentage = 0.85;
-            if (total != 0)
-            {
-                //calculate the porcentage of bikes in the station
-                percentage = bikes / total;
-                station.percentage = percentage;
-                //Debug.WriteLine(percentage);
-            }
+            double percentage = station.percentage;
+
 
             //percentage = 0.5;
             //if the arc is more than 180degress, it is a large arc
@@ -437,27 +651,14 @@ namespace BikeWay03
             rect.Tag = App.MainViewModel.StationList.IndexOf(station);
             rect.Tap += path_Tap;
 
-            //GeometryGroup pie = new GeometryGroup();
-//pie.Children.Add(circle);
-            //pie.Children.Add(pathGeometry);
-            
-
-
             //***********************************************************
             // Create a MapOverlay and add marker
-
-            //MapOverlay overlay_rect = new MapOverlay();
-            //overlay_rect.Content = rect;
-            //overlay_rect.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
-            //overlay_rect.PositionOrigin = new Point(0.5, 0.5);
-            //_pushpinsLayer.Add(overlay_rect);
-
+       
             MapOverlay overlay_r = new MapOverlay();
             overlay_r.Content = gray_circle;
             overlay_r.GeoCoordinate = new GeoCoordinate(coordinate.Latitude, coordinate.Longitude);
             overlay_r.PositionOrigin = new Point(0.5, 0.5);
             _pushpinsLayer.Add(overlay_r);
-
 
             //greeen thing
             MapOverlay overlay = new MapOverlay();
@@ -471,7 +672,7 @@ namespace BikeWay03
 
         #endregion
 
-
+        #region Geolocator Stuff
 
         private async Task ShowUserLocation()
         {
@@ -488,9 +689,34 @@ namespace BikeWay03
             this.UserLocationMarker.Visibility = System.Windows.Visibility.Visible;
         }
 
-
+        #endregion
 
         #region Event Handlers
+
+        private void OnPageLoaded(object sender, RoutedEventArgs e)
+        {
+            //this.Dispatcher.BeginInvoke(new Action(this.MapFlightToSeattle));
+
+            //this.StoresMapItemsControl.ItemsSource = this.mainViewModel.StoreList;
+
+            Debug.WriteLine("Page Loaded");
+
+            if (Settings.FirstTimeLaunch == true)
+            {
+                return;
+            }
+
+            GeoCoordinate lastCoordinate = Settings.LastUserLocation;
+
+            if (lastCoordinate != null)
+            {
+                MapControl.SetView(lastCoordinate, 17);                
+                myLocation = lastCoordinate;
+            }
+
+            LocationRectangle locationRectangle = getLocationRectangle();
+            UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
+        }
 
         private void RefreshClick(object sender, EventArgs e)
         {
@@ -532,9 +758,20 @@ namespace BikeWay03
 
         private void appbar_nearby(object sender, EventArgs e)
         {
+            string location = "";
+            string locationStatus = "&location=";
+            if (this.myLocation != null && Settings.UserLocation == true)
+            {
+                locationStatus += "true";
+                location = "&locationLatitude=" + myLocation.Latitude + "&locationLongitude=" + myLocation.Longitude;
+            }
+            else
+            {
+                locationStatus += "false";
+            }
             //MapControl.Layers.Remove(_pushpinsLayer);
             NavigationService.Navigate(new Uri("/PivotPage.xaml?"
-                            + "navigatedFrom=" + PivotEnum.AppBar_Nearby, UriKind.Relative));
+                            + "navigatedFrom=" + PivotEnum.AppBar_Nearby + locationStatus + location, UriKind.Relative));
 
         }
 
@@ -549,15 +786,72 @@ namespace BikeWay03
 
         private void MapControl_ZoomLevelChanged(object sender, MapZoomLevelChangedEventArgs e)
         {
-            Debug.WriteLine(this.MapControl.ZoomLevel);
-            double zoomLevel = this.MapControl.ZoomLevel;
+            
+            int zoomLevel = (int)this.MapControl.ZoomLevel;
 
-            if (zoomLevel <= 12)
+
+            
+
+
+            //turning zoom level into int so we don't have that many updates
+            if ((this.lastZoomLevel != zoomLevel) && zoomLevel > 3)
             {
-                if (_pushpinsNetworksLayer == null)
-                    Debug.WriteLine("tamanho da networklist = " + App.MainViewModel.NetworkList.Count);
-                    UpdatePushpinsNetworksOnMap(App.MainViewModel.NetworkList);
+                //Debug.WriteLine(zoomLevel);
+                Debug.WriteLine("Zoom Level Changed = " + zoomLevel + " lastZoomLevel = " + lastZoomLevel);
+                LocationRectangle locationRectangle = getLocationRectangle();
+                if ((zoomLevel >= lastZoomLevel) && zoomLevel == 13)
+                {
+                    Debug.WriteLine("Trying to get network pushpins");
+                    if (_pushpinsNetworksLayer == null)
+                        UpdatePushpinsNetworksOnMap(App.MainViewModel.NetworkList);
+
+                }
+                if ((zoomLevel <= lastZoomLevel) && zoomLevel > 13)
+                {
+                    UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
+                }
+
+                if ((zoomLevel >= lastZoomLevel) && zoomLevel == 13)
+                {
+                    Debug.WriteLine("try to get a new network");
+                    LocationRectangle networkLocationRectangle = getLocationRectangle();
+                    //Debug.WriteLine("delta_latitude = " + networkLocationRectangle.HeightInDegrees);
+                   // Debug.WriteLine("delta_longitude = " + networkLocationRectangle.WidthInDegrees);
+                    Database.tryGetNetwork(networkLocationRectangle);
+                }
+
+                this.lastZoomLevel = zoomLevel;
             }
+
+
+        }
+
+        private void MapControl_CenterChanged(object sender, MapCenterChangedEventArgs e)
+        {
+            if (locationRectangle == null)
+                return;
+
+
+            double delta_latitude = locationRectangle.HeightInDegrees/2;
+            double delta_longitude = locationRectangle.WidthInDegrees/2;
+
+            double diference_latitude = MapControl.Center.Latitude - mapCenter.Latitude;
+            double diference_longitude = MapControl.Center.Longitude - mapCenter.Longitude;
+
+            if (Math.Abs(delta_latitude - diference_latitude) >= 0)
+            {
+                this.mapCenter = MapControl.Center;
+                LocationRectangle lRectangle = getLocationRectangle();
+                this.locationRectangle = lRectangle;
+            }
+
+            if (Math.Abs(delta_longitude - diference_longitude) >= 0)
+            {
+                this.mapCenter = MapControl.Center;
+                LocationRectangle lRectangle = getLocationRectangle();
+                this.locationRectangle = lRectangle;
+            }
+
 
         }
 
