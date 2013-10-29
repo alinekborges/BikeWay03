@@ -1,4 +1,5 @@
-﻿using Microsoft.Phone.Maps.Controls;
+﻿using BikeWay03.DB;
+using Microsoft.Phone.Maps.Controls;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -157,6 +158,29 @@ namespace BikeWay03.ViewModels
 
             return station;
         }
+        public FavoriteBase getFavoriteBase()
+        {
+            FavoriteBase station = new FavoriteBase
+            {
+
+                id = this.id,
+                name = this.name,
+                lat = this.lat,
+                lng = this.lng,
+                number = this.number,
+                bikes = this.bikes,
+                free = this.free,
+                station_url = this.station_url,
+                percentage = this.percentage,
+                _bikes_string = this._bikes_string,
+                _free_string = this._free_string,
+                IsFavorite = this.IsFavorite
+
+            };
+
+            return station;
+        }
+
 
         public string BikesString
         {
@@ -201,6 +225,27 @@ namespace BikeWay03.ViewModels
         }
 
         public static StationModel getStationModel(StationBase stationBase)
+        {
+            StationModel station = new StationModel
+            {
+                id = stationBase.id,
+                name = stationBase.name,
+                lat = stationBase.lat,
+                lng = stationBase.lng,
+                number = stationBase.number,
+                bikes = stationBase.bikes,
+                free = stationBase.free,
+                station_url = stationBase.station_url,
+                percentage = stationBase.percentage,
+                _bikes_string = stationBase._bikes_string,
+                _free_string = stationBase._free_string,
+                IsFavorite = stationBase.IsFavorite
+            };
+
+            return station;
+        }
+
+        public static StationModel getStationModel(FavoriteBase stationBase)
         {
             StationModel station = new StationModel
             {

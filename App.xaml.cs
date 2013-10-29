@@ -23,7 +23,7 @@ namespace BikeWay03
         public static bool OfflineMode = false;
 
         public static MainPage MainPage;
-
+        public static bool isLaunching;
 
 
         public static PivotPageViewModel PivotPageViewModel
@@ -102,6 +102,7 @@ namespace BikeWay03
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
             Settings.loadAllSettings();
+            isLaunching = true;
             
         }
 

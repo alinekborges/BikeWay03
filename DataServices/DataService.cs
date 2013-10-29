@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using BikeWay03.DB;
 using BikeWay03.Util;
 using Microsoft.Phone.Maps.Controls;
+using System.Windows;
+using System.Collections.ObjectModel;
 
 namespace BikeWay03.DataServices
 {
@@ -30,7 +32,7 @@ namespace BikeWay03.DataServices
         {
             if (App.OfflineMode == true)
             {
-                GetStationListOffline();
+                //GetStationListOffline();
             }
             else
             {
@@ -47,23 +49,19 @@ namespace BikeWay03.DataServices
             Debug.WriteLine(urlToCall);
             if (App.OfflineMode == true)
             {
-                GetStationListOffline();
+                //GetStationListOffline();
             }
             else
             {
                 WebClient client = new WebClient();
                 client.DownloadStringCompleted += client_DownloadStringCompleted;
                 client.DownloadStringAsync(new Uri(urlToCall));
+                App.MainPage.Status = "Downloading stations for " + network.name;
+                App.MainPage.IsLoadingSomething = true;
             }
         }
 
-        public static void getStationListInBackground(string urlToCall)
-        {
-            WebClient client = new WebClient();
-            error = false;
-            client.DownloadStringCompleted += client_DownloadStringCompletedInBackground;
-            client.DownloadStringAsync(new Uri(urlToCall));
-        }
+
 
         private static void client_DownloadStringCompletedInBackground(object sender, DownloadStringCompletedEventArgs e)
         {
@@ -74,13 +72,15 @@ namespace BikeWay03.DataServices
                 Debug.WriteLine(result);
                 //saveText(filename, result);
                 stationListInBackground = JsonConvert.DeserializeObject<List<StationModel>>(result);
+                App.MainPage.IsLoadingSomething = false;
 
             }
             else
             {
                 Debug.WriteLine("ERROR downloading api");
                 error = true;
-                //do nothing. maybe show a sign? maybe
+                App.MainPage.IsLoadingSomething = false;
+                MessageBox.Show("Error downloading station information. Check your internet connection");
             }
         }
 
@@ -91,48 +91,6 @@ namespace BikeWay03.DataServices
             client.DownloadStringAsync(new Uri(networkUrl));
         }
 
-        public static bool GetStationListOffline()
-        {
-            string stations;
-
-            if (loadText(filename, out stations) == true)
-            {
-                Debug.WriteLine("reding saved stations");
-                Debug.WriteLine(stations);
-
-                List<StationModel> stationList = JsonConvert.DeserializeObject<List<StationModel>>(stations);
-
-
-                if (stationList != null)
-                {
-                    
-
-                    foreach (StationModel station in stationList)
-                    {
-                        App.MainViewModel.StationList.Add(station);
-                    }
-
-                   
-                    
-                    //MainPage.UpdatePushpinsOnTheMap(App.StationListViewModel.StationList);
-                    //Database.initializeDatabase();
-                    
-                    return true;
-
-                }
-                else
-                {
-                    return false;
-                }
-
-                
-            }
-            else
-            {
-                return false;
-            }
-
-        }
 
         private static void client_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
@@ -146,18 +104,27 @@ namespace BikeWay03.DataServices
 
                 if (stationList != null)
                 {
-                    
+                    ObservableCollection<StationModel> stations = new ObservableCollection<StationModel>(stationList);
                     foreach (StationModel station in stationList)
                     {
-                        App.MainViewModel.StationList.Add(station);                       
+                        App.MainViewModel.StationList.Add(station);                   
                     }
 
                     if (Settings.IsStationSavedToDatabase == false)
                     {
-                        Database.SaveStations(App.MainViewModel.StationList);
+                        Database.SaveStations(App.MainViewModel.StationList);                        
                     }
+
+                    if (Settings.IsStationSavedToDatabase == true)
+                    {
+                        Debug.WriteLine("Size of stations + " + App.MainViewModel.StationList.Count);
+                        Database.DeleteAllAndSaveStations("", App.MainViewModel.StationList);
+                    }
+
                     LocationRectangle locationRectangle = App.MainPage.getLocationRectangle();
                     App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
+                    App.MainPage.Status = "";
+                    App.MainPage.IsLoadingSomething = false;
                     //App.MainPage.UpdatePushpinsStationsOnMap(App.MainViewModel.StationList);
                 }
 
@@ -165,6 +132,8 @@ namespace BikeWay03.DataServices
             else
             {
                 Debug.WriteLine("ERROR downloading api of stations ");
+                App.MainPage.IsLoadingSomething = false;
+                MessageBox.Show("Error downloading stations information. Check your internet connection");
             }
         }
 
@@ -194,11 +163,18 @@ namespace BikeWay03.DataServices
                     }
 
                     Debug.WriteLine("network size = " + networkList.Count);
-
+                    App.MainPage.IsLoadingSomething = false;
                     if (Settings.FirstTimeLaunch == true)
                     {
-                        var currentNetwork = Database.tryGetNetwork(App.MainPage.myLocation, App.MainViewModel.NetworkList);
-                        App.MainViewModel.Network = currentNetwork;
+                        if (Settings.UserLocation == true)
+                        {
+                            var currentNetwork = Database.tryGetNetwork(App.MainPage.myLocation, App.MainViewModel.NetworkList);
+                            App.MainViewModel.Network = currentNetwork;
+                        }
+                        else
+                        {
+                            App.MainPage.UpdatePushpinsNetworksOnMap(App.MainViewModel.NetworkList);
+                        }
                         Settings.FirstTimeLaunch = false;
                     }
                 }
@@ -206,7 +182,8 @@ namespace BikeWay03.DataServices
             }
             else
             {
-                Debug.WriteLine("ERROR downloading api of Networks");
+                App.MainPage.IsLoadingSomething = false;
+                MessageBox.Show("Error downloading network information. Check your internet connection");
             }
         }
 

@@ -45,6 +45,7 @@ namespace BikeWay03.DB
                 {
                     await sqliteConnection.CreateTableAsync<StationBase>();
                     await sqliteConnection.CreateTableAsync<NetworkBase>();
+                    await sqliteConnection.CreateTableAsync<FavoriteBase>();
                     Debug.WriteLine("Database Tables Created");
 
                 }
@@ -75,6 +76,56 @@ namespace BikeWay03.DB
                 Settings.IsStationSavedToDatabase = true;
             }
         }
+
+        public static async void DeleteAllAndSaveStations(string networkName, ObservableCollection<StationModel> list)
+        {
+            string query = "DELETE FROM station";
+            Debug.WriteLine(query);
+
+
+            App.MainPage.IsLoadingSomething = true;
+            App.MainPage.Status = "Deleting " + networkName + " stations...";
+
+            var linesChanged = await sqliteConnection.QueryAsync<int>(query);
+
+
+            App.MainPage.IsLoadingSomething = false;
+            App.MainPage.Status = "";
+
+            
+
+            Debug.WriteLine("lines changed deleting stations: lenght = " + linesChanged.Count);
+            Settings.IsStationSavedToDatabase = false;
+
+
+            Debug.WriteLine("Size of stations + " + list.Count);
+            List<StationBase> stationBaseList = new List<StationBase>();
+
+            
+
+            return;
+            int i = 0;
+            foreach (StationModel station in list)
+            {
+                Debug.WriteLine(i);
+                i++;
+                stationBaseList.Add(station.getStationBase());
+            }
+            Debug.WriteLine("Station list count " + stationBaseList.Count);
+            //StationBase station = stationList[0].getStationBase();
+
+            int inserted = await sqliteConnection.InsertAllAsync(stationBaseList);
+
+            // If insertion successfull we update our view
+            if (inserted > 0)
+            {
+                //UpdateCustomersList();
+                Debug.WriteLine("adding stations : database changed succesfully - lines changed: " + inserted.ToString());
+                Settings.IsStationSavedToDatabase = true;
+            }
+
+        }
+
         public static async void SaveNetworks(ObservableCollection<NetworkModel> networkList)
         {
             //int inserted = await sqlite
@@ -103,8 +154,8 @@ namespace BikeWay03.DB
 
         public static async void getFavorites()
         {
-            string query = "SELECT * FROM station WHERE IsFavorite = 1 ";
-            var results = await sqliteConnection.QueryAsync<StationBase>(query);
+            string query = "SELECT * FROM favorites";
+            var results = await sqliteConnection.QueryAsync<FavoriteBase>(query);
             Debug.WriteLine(query);
 
 
@@ -112,7 +163,7 @@ namespace BikeWay03.DB
 
             App.PivotPageViewModel.favoriteList.Clear();
 
-            foreach (StationBase stationBase in results)
+            foreach (FavoriteBase stationBase in results)
             {
                 StationModel station = StationModel.getStationModel(stationBase);
                 App.PivotPageViewModel.favoriteList.Add(station);
@@ -154,7 +205,12 @@ namespace BikeWay03.DB
                 NetworkModel network = NetworkModel.getNetworkModel(networkBase);
                 App.MainViewModel.NetworkList.Add(network);
             }
-            Settings.IsNetworkSavedToDatabase = true;
+            //Settings.IsNetworkSavedToDatabase = true;
+
+            if (App.MainPage.MapControl.ZoomLevel <= 13)
+            {
+                App.MainPage.UpdatePushpinsNetworksOnMap(App.MainViewModel.NetworkList);
+            }
 
         }
 
@@ -178,18 +234,24 @@ namespace BikeWay03.DB
             Settings.IsNetworkSavedToDatabase = true;
             Debug.WriteLine("current network name  = " + Settings.currentNetworkName);
 
-            if (Settings.currentNetworkName != null)
-            {                
-                    if (Settings.IsStationSavedToDatabase == true)
-                    {
-                        Debug.WriteLine("Station is saved to database. Trying to load");
-                        getAllStations();
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Station is NOT saved to database. Trying to download");
-                        DataService.GetStationList(new NetworkModel { name = Settings.currentNetworkName });
-                    }            
+            if (!string.IsNullOrEmpty(Settings.currentNetworkName))
+            {
+                if (Settings.IsStationSavedToDatabase == true)
+                {
+                    Debug.WriteLine("Station is saved to database. Trying to load");
+                    getAllStations();
+                }
+                else
+                {
+                    Debug.WriteLine("Station is NOT saved to database. Trying to download");
+                    DataService.GetStationList(new NetworkModel { name = Settings.currentNetworkName });
+                }
+            }
+            else
+            {
+
+                 App.MainPage.UpdatePushpinsNetworksOnMap(App.MainViewModel.NetworkList);
+  
             }
         }
 
@@ -261,17 +323,27 @@ namespace BikeWay03.DB
             return nearbyList;
         }
 
-        public static async void UpdateFavoriteStation(StationModel station)
+        
+
+        public static async void AddFavoriteStation(StationModel station, string networkName)
         {
-            string query = "UPDATE station SET IsFavorite = 1  WHERE number = " + station.number;
+            //string query = "UPDATE station SET IsFavorite = 1  WHERE number = " + station.number;
 
-            StationBase stationBase = station.getStationBase();
+            FavoriteBase stationBase = station.getFavoriteBase();
+            stationBase.networkName = networkName;
+            int lines_changed;
 
-            int lines_changed = await sqliteConnection.UpdateAsync(stationBase);
+            if (station.IsFavorite == true)
+            {
+                lines_changed = await sqliteConnection.InsertAsync(stationBase);
+            }
+            else
+            {
+                lines_changed = await sqliteConnection.DeleteAsync(stationBase);
+            }
 
 
-            //int lines_changed = await sqliteConnection.QueryAsync<StationBase>(query);
-            Debug.WriteLine("isFavorite = " + station.IsFavorite.ToString());
+            
 
             if (lines_changed > 0)
             {
@@ -386,12 +458,35 @@ namespace BikeWay03.DB
                 Settings.CurrentNetworkLatitude = myNetwork.GeoCoordinate.Latitude;
                 Settings.CurrentNetworkLongitude = myNetwork.GeoCoordinate.Longitude;
                 Settings.currentNetworkName = myNetwork.name;
+                App.MainViewModel.Network = myNetwork;
                 return myNetwork;
             }
 
         }
 
     }
-
+    [Table("favorites")]
+    public class FavoriteBase
+    {
+        [PrimaryKey]
+        public int id { get; set; }
+        public string name { get; set; }
+        public int lat { get; set; }
+        public int lng { get; set; }
+        public int number { get; set; }
+        public int bikes { get; set; }
+        public int free { get; set; }
+        public string station_url { get; set; }
+        public double percentage { get; set; }
+        public string _bikes_string { get; set; }
+        public string _free_string { get; set; }
+        public string networkName { get; set; }
+        private bool isFavorite = false;
+        public bool IsFavorite
+        {
+            get { return this.isFavorite; }
+            set { this.isFavorite = value; }
+        }
+    }
   
 }

@@ -42,11 +42,9 @@ namespace BikeWay03.ViewModels
             set
             {
                 if (this.network != value)
-                {
-                    
-                    Debug.WriteLine("changing network to " + value.name);
-                    MainPage.Status = "Downloading stations for " + value.name;
-                    DataService.GetStationList(value);
+                {                    
+                    Debug.WriteLine("changing network to " + value.name);                    
+                    DataService.GetStationList(value);                    
 
                 }
             }
@@ -54,6 +52,7 @@ namespace BikeWay03.ViewModels
 
         public void LoadNetworks()
         {
+            Debug.WriteLine("Loading something");
             if (this.isNetworkLoaded == true)
                 return;
             
@@ -78,6 +77,7 @@ namespace BikeWay03.ViewModels
 
         public void LoadData()
         {
+            Debug.WriteLine("Loading something");
             if (this.isNetworkLoaded == true)
                 return;
 
@@ -85,12 +85,16 @@ namespace BikeWay03.ViewModels
             {
                 DataService.GetNetworkList();
                 this.isNetworkLoaded = true;
+                this.IsDataLoaded = true;
                 return;
             }            
 
             if (Settings.IsNetworkSavedToDatabase == true)
             {
                 Database.getAllNetworksAndStations();
+                this.isNetworkLoaded = true;
+                this.IsDataLoaded = true;
+                this.isStationsLoaded = true;
             }
 
 

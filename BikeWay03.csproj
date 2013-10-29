@@ -111,6 +111,9 @@
     </Compile>
     <Compile Include="Database\SQLite.cs" />
     <Compile Include="Database\SQLiteAsync.cs" />
+    <Compile Include="SettingsPage.xaml.cs">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TimerPage.xaml.cs">
       <DependentUpon>TimerPage.xaml</DependentUpon>
     </Compile>
@@ -145,6 +148,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="SettingsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TimerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -162,6 +169,7 @@
     <Content Include="Assets\AppBikeIcon.png" />
     <Content Include="Assets\AppBikeIcon2.png" />
     <Content Include="Assets\AppBikeMedium.png" />
+    <Content Include="Assets\Icons\appbar.map.png" />
     <Content Include="Assets\Icons\appbar.pin.png" />
     <Content Include="Assets\Icons\appbar.refresh.png" />
     <Content Include="Assets\ApplicationIcon.png">
@@ -262,6 +270,10 @@
     <ProjectReference Include="..\LiveTileService\LiveTileService.csproj">
       <Project>{A41C4053-7CFE-4B69-A23F-6EC4FB7F4448}</Project>
       <Name>LiveTileService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.Phone.Controls.Toolkit.WP8\Microsoft.Phone.Controls.Toolkit.WP8.csproj">
+      <Project>{486642F0-AB94-4F28-B49C-106CA3134239}</Project>
+      <Name>Microsoft.Phone.Controls.Toolkit.WP8</Name>
     </ProjectReference>
     <ProjectReference Include="sqlite-net-wp8-master\Sqlite.vcxproj">
       <Project>{59B35F6C-E062-4F0E-88D8-13F3F82A24F3}</Project>

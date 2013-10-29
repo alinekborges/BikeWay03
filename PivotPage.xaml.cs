@@ -73,7 +73,8 @@ namespace BikeWay03
                     pivotResource = "";
                     break;
                 case 2:
-                    pivotResource = "FavoriteAppBar";
+                    //pivotResource = "FavoriteAppBar";
+                    pivotResource = "";
                     break;
                 default:
                     break;
@@ -337,13 +338,20 @@ namespace BikeWay03
                     station.IsFavorite = true; 
                 }
                 //   
-                Database.UpdateFavoriteStation(station);
+                Database.AddFavoriteStation(station, Settings.currentNetworkName);
             }
 
             this.Pivot.SelectedIndex = 2;
             
         }
-
+        private void showStationOnMap(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + App.PivotPageViewModel.Station.GeoCoordinate.Latitude
+                + "&longitude=" + App.PivotPageViewModel.Station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
 
         #endregion
 
@@ -360,12 +368,101 @@ namespace BikeWay03
 
         }
 
+        #region Event Handlers
+
         private void Image_Tap_1(object sender, System.Windows.Input.GestureEventArgs e)
         {
 
         }
 
 
+        private void NearbyTap0(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.nearbyList[1];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+        private void NearbyTap1(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+
+            StationModel station = App.PivotPageViewModel.nearbyList[1];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+        private void NearbyTap2(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.nearbyList[2];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+        private void NearbyTap3(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.nearbyList[3];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+        private void NearbyTap4(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.nearbyList[4];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+        private void NearbyTap5(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.nearbyList[5];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+        private void NearbyTap6(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StationModel station = App.PivotPageViewModel.nearbyList[6];
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
+
+        #endregion
+
+        private void FavoriteStationTap(object sender, System.Windows.Input.GestureEventArgs e)
+        {
+            StackPanel panel = (StackPanel)sender;
+            string id = panel.Tag.ToString();
+            int ID = Convert.ToInt32(id);
+            StationModel station = App.PivotPageViewModel.nearbyList.ToList().Find(x => x.id == ID);
+
+            NavigationService.Navigate(new Uri("/MainPage.xaml?"
+                + "navigatedFrom=" + "PivotPage"
+                + "&latitude=" + station.GeoCoordinate.Latitude
+                + "&longitude=" + station.GeoCoordinate.Longitude
+                , UriKind.Relative));
+        }
 
     }
 }
